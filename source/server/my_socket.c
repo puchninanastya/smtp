@@ -5,7 +5,7 @@
 #include <string.h> 
 
 #include "my_socket.h"
-#include "../common/error_fail.h"
+#include "error_fail.h"
 
 int create_socket_on_port( int port ) 
 {

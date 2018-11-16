@@ -9,7 +9,7 @@ DFLAGS= -Wall -g
 all: clean server
 
 server: 
-	$(CC) $(STD) $(RFLAGS) my_socket.c server.c main.c -o server
+	$(CC) $(STD) $(RFLAGS) my_socket.c server.c error_fail.c main.c -o server
 
 clean: 
 	rm -rf *.o server
