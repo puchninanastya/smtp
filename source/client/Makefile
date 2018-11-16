@@ -6,10 +6,10 @@ RFLAGS= -Wall -O
 
 DFLAGS= -Wall -g 
 
-all: clean server
+all: clean client
 
-server: 
-	$(CC) $(STD) $(RFLAGS) my_socket.c server.c main.c -o server
+client: 
+	$(CC) $(STD) $(RFLAGS) my_socket.c client.c main.c -o client
 
-clean: 
-	rm -rf *.o server
+client: 
+	rm -rf *.o client
