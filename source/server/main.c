@@ -8,7 +8,8 @@
 
 struct server my_server;
 
-void exit_handler( int signal ) {
+void exit_handler( int signal ) 
+{
 
     // Find out which signal we're handling
     const char *signal_name;
@@ -26,7 +27,7 @@ void exit_handler( int signal ) {
             signal_name = "SIGUSR1";
             break;
         case SIGINT:
-            signal_name = "SIGUSR1";
+            signal_name = "SIGINT";
             break;
         default:
             fprintf(stderr, "Caught wrong signal: %d\n", signal);
@@ -41,7 +42,8 @@ void exit_handler( int signal ) {
     exit(0);
 }
 
-int set_handler_to_signals() {
+int set_handler_to_signals() 
+{
     struct sigaction sa;
 
     sa.sa_handler = &exit_handler;
@@ -66,7 +68,8 @@ int set_handler_to_signals() {
     return 0;
 }
 
-int main( int argc, char **argv ) {
+int main( int argc, char **argv ) 
+{
     if ( set_handler_to_signals() ) {
         printf("Can not set handlers to signals.\n");
         return 1;
@@ -75,6 +78,7 @@ int main( int argc, char **argv ) {
 
     server_initialize();
     server_run();
+    server_close();
 
 	return 0;
 }

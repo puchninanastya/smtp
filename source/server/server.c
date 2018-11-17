@@ -1,4 +1,4 @@
-#include "stdio.h"
+#include <stdio.h>
 #include <sys/socket.h> 
 #include <unistd.h>
 
@@ -8,8 +8,6 @@
 #include "error_fail.h"
 
 extern struct server my_server;
-
-// TODO: change prints to logs
 
 int server_initialize() 
 {
