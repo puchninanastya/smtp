@@ -6,19 +6,18 @@
 
 void fail_on_error( const char* err )
 {
-    printf("Error! ");
+    printf( "Error! %s", err );
 
-    switch (errno) {
+    switch ( errno ) {
         case EPERM:
-            printf("Operation not permitted.\n");
+            printf( "Operation not permitted.\n" );
             break;
         case EACCES:
-            printf("Permission denied.\n");
+            printf( "Permission denied.\n" );
             break;
         default:
-            printf("Unknown error: %d\n", errno);
             break;
     }
 
-    exit(-1);
+    exit( -1 );
 }

@@ -1,1 +1,2 @@
-#define SERVER_PORT 10000
+#define SERVER_PORT 10001
+#define BUFFER_SIZE 1024
