@@ -40,14 +40,14 @@ int server_run()
         if ( actual_received < 0 ) {
             fail_on_error( "Can not read data from client!" );
         }
-        printf( "Message \"%s\"received from client.\n", buffer );
+        printf( "Message \"%s\" received from client.\n", buffer );
 
         const char* message_to_send = "Echo hello from server!";
         ssize_t actual_sent = send( client_socket_fd, message_to_send, strlen(message_to_send), 0 ); 
         if ( actual_sent < 0 ) {
             fail_on_error( "Can not sent data to client!" );
         }
-        printf( "Message \"%s\"sent to client.\n", message_to_send );
+        printf( "Message \"%s\" sent to client.\n", message_to_send );
 
         close(client_socket_fd);
 

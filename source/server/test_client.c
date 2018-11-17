@@ -52,7 +52,7 @@ int main( int argc, char **argv )
     }
     printf( "Message \"%s\" received from server\n", buffer );
 
-    printf( "Done.\n" );
+    printf( "Testing done, it works!\n" );
 
     close( client_socket_fd );
     printf( "Client socket closed.\n" );
