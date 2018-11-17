@@ -6,7 +6,7 @@
 
 void fail_on_error( const char* err )
 {
-    printf( "Error! %s", err );
+    printf( "Error! %s\n", err );
 
     switch ( errno ) {
         case EPERM:

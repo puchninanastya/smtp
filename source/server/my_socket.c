@@ -3,6 +3,7 @@
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <string.h> 
+#include <stdio.h>
 
 #include "my_socket.h"
 #include "error_fail.h"
@@ -68,7 +69,8 @@ void fd_linked_list_add_fd( struct fd_linked_list *fd_list_head, int new_fd )
             fd_list_current = fd_list_current->next;
         };
     }
-    return 0;
+
+    return;
 }
 
 void fd_linked_list_delete_fd( struct fd_linked_list *fd_list_head, int fd_to_delete ) 

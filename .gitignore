@@ -1,1 +1,4 @@
+*.vscode
 
+source/server/server
+source/server/test_client
