@@ -12,7 +12,7 @@ int create_socket_on_port( int port )
     int result;
 
     if ( ( result = socket( AF_INET, SOCK_STREAM, 0 ) ) == 0 ) { 
-        fail_on_error();
+        fail_on_error( "Can not create socket!" );
     } 
 
     struct sockaddr_in address; 
@@ -22,7 +22,7 @@ int create_socket_on_port( int port )
        
     if ( bind( result, ( struct sockaddr * ) &address,  
                                  sizeof( address ) ) <0 ) { 
-        fail_on_error();
+        fail_on_error( "Can not bind socket!" );
     } 
 
     return result;

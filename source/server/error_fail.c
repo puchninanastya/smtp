@@ -4,7 +4,7 @@
 
 #include "error_fail.h"
 
-void fail_on_error()
+void fail_on_error( const char* err )
 {
     printf("Error! ");
 

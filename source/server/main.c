@@ -6,12 +6,12 @@
 
 #include "server.h"
 
+struct server my_server;
+
 void exit_handler( int signal ) {
-    // TODO: stop server and clean to release ports
-    
-    const char *signal_name;
 
     // Find out which signal we're handling
+    const char *signal_name;
     switch (signal) {
         case SIGHUP:
             signal_name = "SIGHUP";
@@ -27,12 +27,17 @@ void exit_handler( int signal ) {
             break;
         case SIGINT:
             signal_name = "SIGUSR1";
+            break;
         default:
             fprintf(stderr, "Caught wrong signal: %d\n", signal);
             return;
     }
 
-    printf("Caught %s, exiting now\n", signal_name);
+    printf("\nCaught signal %s, exiting now..\n", signal_name);
+
+    // Close server socket to release port
+    server_close();
+
     exit(0);
 }
 
@@ -66,8 +71,10 @@ int main( int argc, char **argv ) {
         printf("Can not set handlers to signals.\n");
         return 1;
     }
-	printf("Successfully set handlers to signals.\n");
+	printf("Successfully set exit handler to signals.\n");
 
-    
+    server_initialize();
+    server_run();
+
 	return 0;
 }
