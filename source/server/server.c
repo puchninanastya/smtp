@@ -59,8 +59,9 @@ int server_run()
             fail_on_error( "Select returns 0." );
             break;     
         default:
-            /* All set fds should be checked. */
+            /* All select fd sets should be checked. */
 
+            /* Checking server socket. */
             if ( FD_ISSET( my_server.server_socket_fd, &my_server.read_fds_set ) ) {
                 server_handle_new_connection();
             }
@@ -69,9 +70,10 @@ int server_run()
                 fail_on_error( "Exception listen socket fd." );
             }
 
+            /* Checking clients sockets. */
             // TODO: need to check work with node of list (need pointer)
             for (struct fd_linked_list *current_client = my_server.client_sockets_fds; 
-                current_client->fd; 
+                (current_client->fd);
                 current_client = current_client->next ) {
 
                 if ( FD_ISSET( current_client->fd, &my_server.read_fds_set ) ) {

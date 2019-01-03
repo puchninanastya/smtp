@@ -10,7 +10,6 @@ struct server my_server;
 
 void exit_handler( int signal ) 
 {
-
     // Find out which signal we're handling
     const char *signal_name;
     switch (signal) {

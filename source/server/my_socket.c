@@ -4,6 +4,7 @@
 #include <netinet/in.h> 
 #include <string.h> 
 #include <stdio.h>
+#include <fcntl.h>
 
 #include "my_socket.h"
 #include "error_fail.h"
@@ -21,12 +22,13 @@ int create_socket_on_port( int port )
     address.sin_family = AF_INET; 
     address.sin_addr.s_addr = INADDR_ANY; 
     address.sin_port = htons( port ); 
-       
-    // TODO: add NONBLOCK option
+    
     int sock_opt = 1;
     if ( setsockopt( socket_fd, SOL_SOCKET, SO_REUSEPORT | SO_REUSEADDR, &sock_opt, sizeof( sock_opt ) ) ) {
 		fail_on_error( "Can not set socket options" ); 
     }
+    
+    fcntl(socket_fd, F_SETFL, O_NONBLOCK);
 
     if ( bind( socket_fd, ( struct sockaddr * ) &address,  
                                  sizeof( address ) ) <0 ) { 
