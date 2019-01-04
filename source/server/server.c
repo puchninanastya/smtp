@@ -2,6 +2,8 @@
 #include <sys/socket.h> 
 #include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/select.h>
 
 #include "server.h"
 #include "my_socket.h"
@@ -16,10 +18,9 @@ int server_initialize()
     my_server.server_socket_fd = create_socket_on_port( SERVER_PORT );
     my_server.break_main_loop = 0;
     my_server.client_sockets_fds = NULL;
-    server_update_fd_sets();
-    if ( listen( my_server.server_socket_fd, 1 ) < 0 ) {
-        fail_on_error( "Can not start listening server socket!" );
-    }
+    my_server.read_fds_set  = ( fd_set* ) malloc( sizeof ( fd_set) );
+    my_server.write_fds_set = ( fd_set* ) malloc( sizeof ( fd_set ) );
+    my_server.exceptions_fds_set = ( fd_set* ) malloc( sizeof ( fd_set ) );
     printf("Server successfully initialized.\n");
     return 0;   
 }
@@ -27,16 +28,31 @@ int server_initialize()
 void server_update_fd_sets()
 {
     // TODO: check do we need to set write for server socket
-    printf("Building fd sets for select...\n");
-    
-    FD_ZERO( &my_server.read_fds_set );
-    FD_SET( my_server.server_socket_fd, &( my_server.read_fds_set ) );
+    printf("Updating fd sets for select...\n");
 
-    FD_ZERO( &my_server.write_fds_set );
+    /* Adding server socket */
+    FD_ZERO( my_server.read_fds_set );
+    FD_SET( my_server.server_socket_fd, my_server.read_fds_set );
 
-    FD_ZERO( &my_server.exceptions_fds_set );
+    my_server.max_fd = my_server.server_socket_fd;
 
-    printf("Fd sets successfully built.\n");
+    /* Adding clients sockets if exist */
+    node* current_client = my_server.client_sockets_fds;
+    while ( current_client != NULL ) {
+        printf( "Adding client to fd set.\n" );
+        FD_SET( current_client->data, my_server.read_fds_set );
+        if ( current_client->data > my_server.max_fd ) {
+            my_server.max_fd = current_client->data;
+        }
+        current_client = current_client->next;
+    }
+
+    FD_ZERO( my_server.write_fds_set );
+
+    FD_ZERO( my_server.exceptions_fds_set );
+    FD_SET( my_server.server_socket_fd, my_server.exceptions_fds_set );
+
+    printf("Fd sets successfully updated.\n");
     return;   
 }
 
@@ -48,8 +64,10 @@ int server_run()
         server_update_fd_sets();
 
         printf( "Waiting for select activity...\n" );
-        int activity = select(1, &my_server.read_fds_set, &my_server.write_fds_set, 
-                            &my_server.exceptions_fds_set, NULL);
+        int activity = select( my_server.max_fd + 1, my_server.read_fds_set, my_server.write_fds_set, 
+                            my_server.exceptions_fds_set, NULL );
+        
+        printf( "Select woke up with activity: %d\n", activity );
 
         switch ( activity ) {
         case -1: 
@@ -62,32 +80,35 @@ int server_run()
             /* All select fd sets should be checked. */
 
             /* Checking server socket. */
-            if ( FD_ISSET( my_server.server_socket_fd, &my_server.read_fds_set ) ) {
-                server_handle_new_connection();
+            if ( FD_ISSET( my_server.server_socket_fd, my_server.read_fds_set ) ) {
+                handle_new_connection();
             }
 
-            if ( FD_ISSET( my_server.server_socket_fd, &my_server.exceptions_fds_set ) ) {
+            if ( FD_ISSET( my_server.server_socket_fd, my_server.exceptions_fds_set ) ) {
                 fail_on_error( "Exception listen socket fd." );
             }
 
             /* Checking clients sockets. */
-            // TODO: need to check work with node of list (need pointer)
-            for (struct fd_linked_list *current_client = my_server.client_sockets_fds; 
-                (current_client->fd);
-                current_client = current_client->next ) {
+            node* current_client = my_server.client_sockets_fds;
+            while ( current_client != NULL ) {
 
-                if ( FD_ISSET( current_client->fd, &my_server.read_fds_set ) ) {
-                    handle_received_message( current_client->fd );
+                if ( FD_ISSET( current_client->data, my_server.read_fds_set ) ) {
+                    handle_received_message( current_client->data );
                 }
         
-                if ( FD_ISSET( current_client->fd, &my_server.write_fds_set ) ) {
-                    handle_send_message( current_client->fd );
+                if ( FD_ISSET( current_client->data, my_server.write_fds_set ) ) {
+                    printf( "ATTENTION! No handler for send message!!!\n" );
+                    //handle_send_message( current_client->data );
                 }
 
-                if ( FD_ISSET( current_client->fd, &my_server.exceptions_fds_set ) ) {
-                    printf( "Exception in client with fd %i.\n", current_client->fd );
-                    server_close_client_connection( current_client );
+                if ( FD_ISSET( current_client->data, my_server.exceptions_fds_set ) ) {
+                    printf( "Exception in client with fd %i.\n", current_client->data );
+                    close_client_connection( current_client );
                 }
+
+                printf( "before current client changed.\n" );
+                current_client = current_client->next;
+                printf( "after current client changed.\n" );
             }
 
             break;
@@ -97,15 +118,16 @@ int server_run()
     return 0;
 }
 
-void server_handle_new_connection() 
-{
-    printf( "Trying to accept new connection..." );
+void handle_new_connection() 
+{           
+    printf( "Trying to accept new connection...\n" );
     int client_socket_fd = accept( my_server.server_socket_fd, NULL, 0 );
     if ( client_socket_fd < 0 ) {
         fail_on_error( "Can not accept client!" );
     }
-    fd_linked_list_add_fd( my_server.client_sockets_fds, client_socket_fd );
-    printf( "Client accepted client socket added to list." );
+    my_server.client_sockets_fds = linked_list_add_node( my_server.client_sockets_fds, 
+        client_socket_fd );
+    printf( "Client accepted and client socket added to list.\n" );
 }
 
 int handle_received_message( int client_fd )
@@ -115,12 +137,16 @@ int handle_received_message( int client_fd )
     ssize_t actual_received = read( client_fd, buffer, BUFFER_SIZE );
     if ( actual_received < 0 ) {
         fail_on_error( "Can not read data from client!" );
+    } else if ( actual_received == 0 ) {
+        close_client_connection( client_fd );
+    } else {
+        printf( "Message \"%s\" received from client.\n", buffer );
+        send_message_to_client( client_fd );
     }
-    printf( "Message \"%s\" received from client.\n", buffer );
     return 0;
 }
 
-int handle_send_message( int client_fd )
+int send_message_to_client( int client_fd )
 {
     printf( "Trying to send message to client with fd %d...\n", client_fd );
     const char* message_to_send = "Echo hello from server!";
@@ -132,16 +158,18 @@ int handle_send_message( int client_fd )
     return 0;
 }
 
-void server_close_client_connection( struct fd_linked_list *client )
+void close_client_connection( int client_fd )
 {
-    printf( "Trying to close client connection..." );
-    close( client->fd );
-    fd_linked_list_delete_fd( my_server.client_sockets_fds, client->fd );
-    printf( "Client socket closed.\n" );
+    printf( "Trying to close client connection...\n" );
+    close( client_fd );
+    my_server.client_sockets_fds = linked_list_delete_node( my_server.client_sockets_fds, 
+        client_fd );
+    printf( "Client socket is closed.\n" );
+    printf( "client_sockets_fds: %d...\n", my_server.client_sockets_fds );
 }
 
 void server_close() 
 {
     close( my_server.server_socket_fd );
-    printf( "Server socket closed.\n" );
+    printf( "Server socket is closed.\n" );
 }

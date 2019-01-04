@@ -43,6 +43,11 @@ int main( int argc, char **argv )
     }
     printf( "Message \"%s\" sent to server\n", message_to_send );
 
+
+    printf( "Sleeping...\n" );
+    sleep(3);
+    printf( "Woke up.\n" );
+
     printf( "Trying to read data from server...\n" );
     char buffer[BUFFER_SIZE];
     memset( buffer, 0, BUFFER_SIZE * sizeof( char ) );
