@@ -103,7 +103,7 @@ int server_run()
 
                 if ( FD_ISSET( current_client->data, my_server.exceptions_fds_set ) ) {
                     printf( "Exception in client with fd %i.\n", current_client->data );
-                    close_client_connection( current_client );
+                    close_client_connection( current_client->data );
                 }
 
                 printf( "before current client changed.\n" );
@@ -165,11 +165,11 @@ void close_client_connection( int client_fd )
     my_server.client_sockets_fds = linked_list_delete_node( my_server.client_sockets_fds, 
         client_fd );
     printf( "Client socket is closed.\n" );
-    printf( "client_sockets_fds: %d...\n", my_server.client_sockets_fds );
+    //printf( "client_sockets_fds: %d...\n", my_server.client_sockets_fds );
 }
 
 void server_close() 
 {
     close( my_server.server_socket_fd );
-    printf( "Server socket is closed.\n" );
+    printf( "Server socketz is closed.\n" );
 }

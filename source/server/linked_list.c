@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "linked_list.h"
+#include "error_fail.h"
 
 node* linked_list_add_node( node *head, int data_to_add )
 {
@@ -66,4 +67,6 @@ node* linked_list_delete_node( node *head, int data_to_delete )
   
     free(temp);  // Free memory 
     printf( "Node is deleted.\n" );
+
+    return head;
 }
