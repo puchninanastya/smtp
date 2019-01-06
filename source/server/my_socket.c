@@ -1,5 +1,6 @@
 #include <unistd.h> 
-#include <sys/socket.h> 
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <string.h> 
@@ -24,7 +25,7 @@ int create_socket_on_port( int port )
     address.sin_port = htons( port ); 
     
     int sock_opt = 1;
-    if ( setsockopt( socket_fd, SOL_SOCKET, SO_REUSEPORT | SO_REUSEADDR, &sock_opt, sizeof( sock_opt ) ) ) {
+    if ( setsockopt( socket_fd, SOL_SOCKET, SO_REUSEADDR, &sock_opt, sizeof( sock_opt ) ) ) {
 		fail_on_error( "Can not set socket options" ); 
     }
     
