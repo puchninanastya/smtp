@@ -103,9 +103,7 @@ int server_run()
                     close_client_connection( current_client->data );
                 }
 
-                printf( "before current client changed.\n" );
                 current_client = current_client->next;
-                printf( "after current client changed.\n" );
             }
 
             break;
@@ -162,11 +160,10 @@ void close_client_connection( int client_fd )
     my_server.client_sockets_fds = linked_list_delete_node( my_server.client_sockets_fds, 
         client_fd );
     printf( "Client socket is closed.\n" );
-    //printf( "client_sockets_fds: %d...\n", my_server.client_sockets_fds );
 }
 
 void server_close() 
 {
     close( my_server.server_socket_fd );
-    printf( "Server socketz is closed.\n" );
+    printf( "Server socket is closed.\n" );
 }
