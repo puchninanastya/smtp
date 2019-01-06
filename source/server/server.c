@@ -94,14 +94,10 @@ int server_run()
 
                 if ( FD_ISSET( current_client->data, my_server.read_fds_set ) ) {
                     handle_received_message( current_client->data );
-                }
-        
-                if ( FD_ISSET( current_client->data, my_server.write_fds_set ) ) {
+                } else if ( FD_ISSET( current_client->data, my_server.write_fds_set ) ) {
                     printf( "ATTENTION! No handler for send message!!!\n" );
                     //handle_send_message( current_client->data );
-                }
-
-                if ( FD_ISSET( current_client->data, my_server.exceptions_fds_set ) ) {
+                } else if ( FD_ISSET( current_client->data, my_server.exceptions_fds_set ) ) {
                     printf( "Exception in client with fd %i.\n", current_client->data );
                     close_client_connection( current_client->data );
                 }
