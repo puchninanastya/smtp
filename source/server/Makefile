@@ -1,39 +1,46 @@
-CC=gcc
+# Main program name
+PROG = server
 
-STD= -std=gnu99
+# Report name
+REPORT = report.pdf
 
-RFLAGS= -Wall -Werror -O
+# Compiler
+CC = gcc
 
-DFLAGS= -Wall -g
+STD = -std=gnu99
 
-INCLUDE_COMMON_FLAGS = -I./../common/include
+# Directories
+INCLUDEDIR = ./../common/include
+SOURCEDIR = ./../common/source
+BUILDDIR = build
 
-INCLUDE_COMMON_SOURCE= ./../common/source/*.c
+# Compilation Flags
+RFLAGS = -Wall -Werror -I$(INCLUDEDIR) -O
+DFLAGS = -Wall -I$(INCLUDEDIR) -g
 
-BUILD_DIR= build
-
+# Targets
 all: clean build_dir server test_client
 
 all-debug: clean build_dir server-debug test_client-debug
 
 server:
-	$(CC) $(STD) $(RFLAGS) $(INCLUDE_COMMON_FLAGS) -o ./$(BUILD_DIR)/server \
-    server.c my_socket.c main.c $(INCLUDE_COMMON_SOURCE)
+	$(CC) $(STD) $(RFLAGS) -o ./$(BUILDDIR)/server \
+    server.c my_socket.c main.c $(SOURCEDIR)/*.c
 
 test_client:
-	$(CC) $(STD) $(RFLAGS) $(INCLUDE_COMMON_FLAGS) -o ./$(BUILD_DIR)/test_client \
-	test_client.c $(INCLUDE_COMMON_SOURCE)
+	$(CC) $(STD) $(RFLAGS) -o ./$(BUILDDIR)/test_client \
+	test_client.c $(SOURCEDIR)/*.c
 
 server-debug:
-	$(CC) $(STD) $(DFLAGS) $(INCLUDE_COMMON_FLAGS) -o ./$(BUILD_DIR)/server \
-    server.c my_socket.c main.c $(INCLUDE_COMMON_SOURCE)
+	$(CC) $(STD) $(DFLAGS) -o ./$(BUILDDIR)/server \
+    server.c my_socket.c main.c $(SOURCEDIR)/*.c
 
 test_client-debug:
-	$(CC) $(STD) $(DFLAGS) $(INCLUDE_COMMON_FLAGS) -o ./$(BUILD_DIR)/test_client \
-	test_client.c $(INCLUDE_COMMON_SOURCE)
+	$(CC) $(STD) $(DFLAGS) -o ./$(BUILDDIR)/test_client \
+	test_client.c $(SOURCEDIR)/*.c
 
 clean: 
 	rm -rf *.o ./build
 
 build_dir:
-	mkdir -p $(BUILD_DIR)
+	mkdir -p $(BUILDDIR)
