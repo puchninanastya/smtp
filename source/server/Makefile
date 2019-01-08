@@ -6,17 +6,28 @@ REPORT = report.pdf
 
 # Compiler
 CC = gcc
-
 STD = -std=gnu99
 
 # Directories
 INCLUDEDIR = ./../common/include
-SOURCEDIR = ./../common/source
+INCLUDESOURCEDIR = ./../common/source
 BUILDDIR = build
 
 # Compilation Flags
 RFLAGS = -Wall -Werror -I$(INCLUDEDIR) -O
 DFLAGS = -Wall -I$(INCLUDEDIR) -g
+
+# Generate check options files with autogen
+./checkoptn.c: ./checkoptn.def
+	SHELL=/bin/sh autogen checkoptn.def
+./checkoptn.h:  ./checkoptn.def
+	SHELL=/bin/sh autogen checkoptn.def
+
+# Generate Finite State Machine files with autogen
+./server-fsm.c: server.def
+	autogen server.def
+./server-fsm.h: server.def
+	autogen server.def
 
 # Targets
 all: clean build_dir server test_client
@@ -44,3 +55,4 @@ clean:
 
 build_dir:
 	mkdir -p $(BUILDDIR)
+
