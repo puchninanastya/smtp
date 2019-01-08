@@ -10,7 +10,7 @@ STD = -std=gnu99
 
 # Directories
 INCLUDEDIR = ./../common/include
-INCLUDESOURCEDIR = ./../common/source
+SOURCEDIR = ./../common/source
 BUILDDIR = build
 
 # Compilation Flags
