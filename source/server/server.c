@@ -64,11 +64,11 @@ int server_run()
 
         server_update_fd_sets();
 
-        printf( "Waiting for select activity...\n" );
-        int activity = select( my_server.max_fd + 1, my_server.read_fds_set, my_server.write_fds_set, 
-                            my_server.exceptions_fds_set, NULL );
+        printf( "Waiting for pselect activity...\n" );
+        int activity = pselect( my_server.max_fd + 1, my_server.read_fds_set, my_server.write_fds_set,
+                            my_server.exceptions_fds_set, NULL, NULL );
         
-        printf( "Select woke up with activity: %d\n", activity );
+        printf( "PSelect woke up with activity: %d\n", activity );
 
         switch ( activity ) {
         case -1: 
