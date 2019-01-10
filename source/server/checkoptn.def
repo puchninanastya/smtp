@@ -1,5 +1,5 @@
 AutoGen Definitions options;
-prog-name     = server;
+prog-name     = smtp_server;
 prog-title    = "SMTP MTA Server";
 long-opts;
 
