@@ -4,8 +4,6 @@
 #include <signal.h>
 #include <string.h>
 
-#include "checkoptn.h"
-
 #include "server.h"
 
 struct server my_server;

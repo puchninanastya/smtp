@@ -17,11 +17,12 @@ STD = -std=gnu99
 COMMON_INCLUDE_DIR = ./../common/include
 COMMON_SOURCE_DIR = ./../common/source
 BUILD_DIR = build
+AUTOGEN_DIR = autogen
 
 # FLAGS:
 
 # Compilation Flags
-RFLAGS = -Wall -Werror -I$(COMMON_INCLUDE_DIR) -O
+RFLAGS = -Wall -Werror -I$(COMMON_INCLUDE_DIR) -I$(AUTOGEN_DIR) -O
 DFLAGS = -Wall -I$(COMMON_INCLUDE_DIR) -g
 
 # Linking and Builing Flags
@@ -67,24 +68,22 @@ server-objs:
     server_fsm_handlers.c
 
 # Compiling Options with Autogen
-checkoptn.o: checkoptn.c
+checkoptn.o: $(AUTOGEN_DIR)/checkoptn.c
 	$(CC) -c -DTEST_CHECK_OPTS `autoopts-config cflags` -o $@  $<
 
 # Compiling FSM with Autogen
-server-fsm.o: server-fsm.c
-	$(CC) -Wall -o $@ -c $<
+server-fsm.o: $(AUTOGEN_DIR)/server-fsm.c
+	$(CC) -Wall -I$(AUTOGEN_DIR) -o $@ -c $<
 
 
 # GENERAION OF AUTOGEN HEADERS AND SOURCE FILES:
 
+autogen_all: autogen_checkoptn autogen_server-fsm
+
 # Generate check options files with autogen
-./checkoptn.c: ./checkoptn.def
-	SHELL=/bin/sh autogen checkoptn.def
-./checkoptn.h:  ./checkoptn.def
-	SHELL=/bin/sh autogen checkoptn.def
+autogen_checkoptn: $(AUTOGEN_DIR)/checkoptn.def
+	SHELL=/bin/sh cd $(AUTOGEN_DIR)/ && autogen ./checkoptn.def
 
 # Generate Finite State Machine files with autogen
-./server-fsm.c: server.def
-	autogen server.def
-./server-fsm.h: server.def
-	autogen server.def
+autogen_server-fsm: $(AUTOGEN_DIR)/server.def
+	SHELL=/bin/sh cd $(AUTOGEN_DIR)/ && autogen ./server.def
