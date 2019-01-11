@@ -6,8 +6,6 @@
 
 # Main program name
 PROG_NAME = smtp_server
-# Report name
-REPORT_NAME = report.pdf
 
 # Compiler
 CC = gcc
@@ -31,7 +29,7 @@ LDFLAGS += $(shell autoopts-config ldflags)
 
 # TARGETS:
 
-all: clean build_dir compile_all smtp_server test_client report
+all: clean build_dir compile_all smtp_server test_client
 
 smtp_server:
 	$(CC) $(STD) $(LDFLAGS) -o ./$(BUILD_DIR)/$(PROG_NAME) \
@@ -40,9 +38,6 @@ smtp_server:
 test_client:
 	$(CC) $(STD) $(RFLAGS) -o ./$(BUILD_DIR)/test_client \
 	test_client.c $(COMMON_SOURCE_DIR)/*.c
-
-report:
-	echo "Report with name $(REPORT_NAME) was not created. Kek."
 
 
 # ADDITIONAL:
