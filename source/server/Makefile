@@ -31,7 +31,7 @@ LDFLAGS += $(shell autoopts-config ldflags)
 
 # TARGETS:
 
-all: clean build_dir compile-all smtp_server test_client report
+all: clean build_dir compile_all smtp_server test_client report
 
 smtp_server:
 	$(CC) $(STD) $(LDFLAGS) -o ./$(BUILD_DIR)/$(PROG_NAME) \
@@ -50,16 +50,19 @@ report:
 clean:
 	rm -rf *.o ./build
 
+.PHONY: build_dir
 build_dir:
 	mkdir -p $(BUILD_DIR)
 
+.PHONY: move_objs
 move_objs:
 	mv *.o $(BUILD_DIR)
 
 
 # COMPILATION:
 
-compile-all: server-objs server-fsm.o serveropts.o move_objs
+.PHONY: compile_all
+compile_all: server-objs server-fsm.o serveropts.o move_objs
 
 # Main server object files
 server-objs:
@@ -78,12 +81,15 @@ server-fsm.o: $(AUTOGEN_DIR)/server-fsm.c
 
 # GENERAION OF AUTOGEN HEADERS AND SOURCE FILES:
 
+.PHONY: autogen_all
 autogen_all: autogen_serveropts autogen_server-fsm
 
 # Generate check options files with autogen
+.PHONY: autogen_serveropts
 autogen_serveropts: $(AUTOGEN_DIR)/serveropts.def
 	SHELL=/bin/sh cd $(AUTOGEN_DIR)/ && autogen -L $prefix/share/autogen ./serveropts.def
 
 # Generate Finite State Machine files with autogen
+.PHONY: autogen_server-fsm
 autogen_server-fsm: $(AUTOGEN_DIR)/server.def
 	SHELL=/bin/sh cd $(AUTOGEN_DIR)/ && autogen ./server.def
