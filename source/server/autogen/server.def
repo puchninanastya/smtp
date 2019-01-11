@@ -40,8 +40,8 @@ transition =
 { tst  = need_data;         tev = cmnd_quit;            next = closed; },
 { tst  = need_data;         tev = connection_failed;    next = closed; },
 
-{ tst  = waiting_for_data;      tev = text;                 next = waiting_for_data; },
-{ tst  = waiting_for_data;      tev = mail_end;             next = saving_mail; },
-{ tst  = waiting_for_data;      tev = connection_failed;    next = closed; },
+{ tst  = waiting_for_data;  tev = text;                 next = waiting_for_data; },
+{ tst  = waiting_for_data;  tev = mail_end;             next = saving_mail; },
+{ tst  = waiting_for_data;  tev = connection_failed;    next = closed; },
 
 { tst  = saving_mail;       tev = message_saved;        next = need_sender; };
