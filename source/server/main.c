@@ -4,7 +4,7 @@
 #include <signal.h>
 #include <string.h>
 
-#include "checkoptn.h"
+#include "serveropts.h"
 
 #include "server.h"
 
@@ -71,6 +71,13 @@ int set_handler_to_signals()
 
 int main( int argc, char **argv ) 
 {
+    {
+        int optct = optionProcess( &serverOptions, argc, argv );
+        printf("My options process returns %d.\n", optct);
+        argc -= optct;
+        argv += optct;
+    }
+
     if ( set_handler_to_signals() ) {
         printf("Can not set handlers to signals.\n");
         return 1;

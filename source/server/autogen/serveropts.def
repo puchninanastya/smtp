@@ -1,7 +1,9 @@
 AutoGen Definitions options;
-prog-name     = smtp_server;
-prog-title    = "SMTP MTA Server";
+prog-name     = server;
+prog-title    = "SMTP Mail Transfer Agent Server";
+test_main;
 long-opts;
+gnu-usage;    /* GNU style preferred to default */
 
 main = { main-type = shell-process; };
 
@@ -19,7 +21,7 @@ flag = {
 flag = {
     name      = maildir;        /* Путь к директории с письмами */
     value     = d;              /* Краткий флаг (-p) */
-    arg-type  = file;
+    arg-type  = string;
     max       = 1;              /* Не более одного раза */
     min       = 1;              /* Обязательный параметр */
     descrip   = "Path to maildir directory";
