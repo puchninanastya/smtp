@@ -5,6 +5,9 @@
 
 #include "my_socket.h"
 #include "linked_list.h"
+#include "mail.h"
+
+#include "autogen/server-fsm.h"
 
 int server_initialize();
 void server_update_fd_sets();
@@ -14,6 +17,16 @@ int handle_received_message( int client_fd );
 int send_message_to_client( int client_fd );
 void close_client_connection( int client_fd );
 void server_close();
+
+typedef struct client_info client_info;
+struct client_info {
+	te_smtp_server_state smtp_state;
+	int socket_fd;
+	char *buffer;
+	int buffer_read_offset;
+	int mail_header_received;
+	mail *mail;
+};
 
 struct server {
 	int server_socket_fd;

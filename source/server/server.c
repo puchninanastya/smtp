@@ -11,6 +11,8 @@
 #include "config.h"
 #include "error_fail.h"
 
+#include "autogen/server-fsm.h"
+
 extern struct server my_server;
 
 int server_initialize() 
@@ -120,7 +122,7 @@ void handle_new_connection()
     if ( client_socket_fd < 0 ) {
         fail_on_error( "Can not accept client!" );
     }
-    my_server.client_sockets_fds = linked_list_add_node( my_server.client_sockets_fds, 
+    my_server.client_sockets_fds = linked_list_add_node( my_server.client_sockets_fds,
         client_socket_fd );
     printf( "Client accepted and client socket added to list.\n" );
 }
