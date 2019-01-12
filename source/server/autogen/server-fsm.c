@@ -304,7 +304,8 @@ smtp_server_invalid_transition( te_smtp_server_state st, te_smtp_server_event ev
 te_smtp_server_state
 smtp_server_step(
     te_smtp_server_state smtp_server_state,
-    te_smtp_server_event trans_evt )
+    te_smtp_server_event trans_evt,
+    int client_socket_fd )
 {
     te_smtp_server_state nxtSt;
     te_smtp_server_trans trans;
@@ -330,56 +331,56 @@ smtp_server_step(
     switch (trans) {
     case SMTP_SERVER_TR_ACCEPTED:
         /* START == ACCEPTED == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_ACCEPTED();
+        nxtSt = HANDLE_ACCEPTED(client_socket_fd, nxtSt);
         /* END   == ACCEPTED == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_CLOSE:
         /* START == CLOSE == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CLOSE();
+        nxtSt = HANDLE_CLOSE(client_socket_fd, nxtSt);
         /* END   == CLOSE == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_CMND_DATA:
         /* START == CMND_DATA == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CMND_DATA();
+        nxtSt = HANDLE_CMND_DATA(client_socket_fd, nxtSt);
         /* END   == CMND_DATA == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_CMND_EHLO:
         /* START == CMND_EHLO == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CMND_EHLO();
+        nxtSt = HANDLE_CMND_EHLO(client_socket_fd, nxtSt);
         /* END   == CMND_EHLO == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_CMND_HELO:
         /* START == CMND_HELO == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CMND_HELO();
+        nxtSt = HANDLE_CMND_HELO(client_socket_fd, nxtSt);
         /* END   == CMND_HELO == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_CMND_MAIL:
         /* START == CMND_MAIL == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CMND_MAIL();
+        nxtSt = HANDLE_CMND_MAIL(client_socket_fd, nxtSt);
         /* END   == CMND_MAIL == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_CMND_RCPT:
         /* START == CMND_RCPT == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CMND_RCPT();
+        nxtSt = HANDLE_CMND_RCPT(client_socket_fd, nxtSt);
         /* END   == CMND_RCPT == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_CMND_RSET:
         /* START == CMND_RSET == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CMND_RSET();
+        nxtSt = HANDLE_CMND_RSET(client_socket_fd, nxtSt);
         /* END   == CMND_RSET == DO NOT CHANGE THIS COMMENT */
         break;
 
@@ -393,21 +394,21 @@ smtp_server_step(
 
     case SMTP_SERVER_TR_MAIL_DATA:
         /* START == MAIL_DATA == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_MAIL_DATA();
+        nxtSt = HANDLE_MAIL_DATA(client_socket_fd, nxtSt);
         /* END   == MAIL_DATA == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_MAIL_END:
         /* START == MAIL_END == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_MAIL_END();
+        nxtSt = HANDLE_MAIL_END(client_socket_fd, nxtSt);
         /* END   == MAIL_END == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_MAIL_SAVED:
         /* START == MAIL_SAVED == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_MAIL_SAVED();
+        nxtSt = HANDLE_MAIL_SAVED(client_socket_fd, nxtSt);
         /* END   == MAIL_SAVED == DO NOT CHANGE THIS COMMENT */
         break;
 

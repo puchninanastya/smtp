@@ -22,17 +22,19 @@ typedef struct client_info client_info;
 struct client_info {
 	te_smtp_server_state smtp_state;
 	int socket_fd;
-	char *buffer;
+	char* buffer;
 	int buffer_read_offset;
 	int mail_header_received;
-	mail *mail;
+	mail** mail;
 };
 
 struct server {
 	int server_socket_fd;
 	int break_main_loop;
 
-	node *client_sockets_fds;
+	client_info** clients;
+	int clients_size;
+	node* client_sockets_fds;
 
 	fd_set* read_fds_set;
 	fd_set* write_fds_set;

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h> 
+#include <sys/socket.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
@@ -17,21 +17,23 @@ extern struct server my_server;
 
 int server_initialize() 
 {
-    printf("Initializing server...\n");
+    printf( "Initializing server...\n" );
     my_server.server_socket_fd = create_socket_on_port( SERVER_PORT );
     my_server.break_main_loop = 0;
+    my_server.clients = NULL;
+    my_server.clients_size = 0;
     my_server.client_sockets_fds = NULL;
     my_server.read_fds_set  = ( fd_set* ) malloc( sizeof ( fd_set) );
     my_server.write_fds_set = ( fd_set* ) malloc( sizeof ( fd_set ) );
     my_server.exceptions_fds_set = ( fd_set* ) malloc( sizeof ( fd_set ) );
-    printf("Server successfully initialized.\n");
+    printf( "Server successfully initialized.\n" );
     return 0;   
 }
 
 void server_update_fd_sets()
 {
     // TODO: check do we need to set write for server socket
-    printf("Updating fd sets for select...\n");
+    printf( "Updating fd sets for select...\n" );
 
     /* Adding server socket */
     FD_ZERO( my_server.read_fds_set );
@@ -122,9 +124,10 @@ void handle_new_connection()
     if ( client_socket_fd < 0 ) {
         fail_on_error( "Can not accept client!" );
     }
-    my_server.client_sockets_fds = linked_list_add_node( my_server.client_sockets_fds,
-        client_socket_fd );
-    printf( "Client accepted and client socket added to list.\n" );
+    smtp_server_step( SMTP_SERVER_ST_INIT, SMTP_SERVER_EV_CONN_ACCEPTED,
+                      client_socket_fd );
+    my_server.client_sockets_fds = linked_list_add_node( my_server.client_sockets_fds, client_socket_fd );
+    printf( "Client accepted and client socket added to clients array.\n" );
 }
 
 int handle_received_message( int client_fd )

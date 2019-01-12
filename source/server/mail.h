@@ -3,10 +3,10 @@
 
 typedef struct mail mail;
 struct mail {
-    char *sender;
-    char **recepients;
+    char* sender;
+    char** recepients;
     int recepients_num;
-    char *data;
+    char* data;
     int data_length;
 };
 
