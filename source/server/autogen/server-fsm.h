@@ -88,9 +88,7 @@ typedef enum {
 extern te_smtp_server_state
 smtp_server_step(
     te_smtp_server_state smtp_server_state,
-    te_smtp_server_event trans_evt,
-    const char *cmnd,
-    void *state );
+    te_smtp_server_event trans_evt );
 
 #endif /* AUTOFSM_SERVER_FSM_H_GUARD */
 /*

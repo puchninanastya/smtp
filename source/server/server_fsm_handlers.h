@@ -1,7 +1,7 @@
 #ifndef SMTP_MTA_SERVER_FSM_HANDLERS_H
 #define SMTP_MTA_SERVER_FSM_HANDLERS_H
 
-#include "server-fsm.h"
+#include "autogen/server-fsm.h"
 
 int HANDLE_ACCEPTED();
 

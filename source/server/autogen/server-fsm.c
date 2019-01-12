@@ -43,6 +43,8 @@
  *  comments, or it will be removed the next time it is generated.
  */
 /* START === USER HEADERS === DO NOT CHANGE THIS COMMENT */
+#include <stdlib.h>
+#include "../server_fsm_handlers.h"
 /* END   === USER HEADERS === DO NOT CHANGE THIS COMMENT */
 
 #ifndef NULL
@@ -302,9 +304,7 @@ smtp_server_invalid_transition( te_smtp_server_state st, te_smtp_server_event ev
 te_smtp_server_state
 smtp_server_step(
     te_smtp_server_state smtp_server_state,
-    te_smtp_server_event trans_evt,
-    const char *cmnd,
-    void *state )
+    te_smtp_server_event trans_evt )
 {
     te_smtp_server_state nxtSt;
     te_smtp_server_trans trans;
