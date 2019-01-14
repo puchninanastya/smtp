@@ -21,10 +21,9 @@ AUTOGEN_DIR = autogen
 
 # Compilation Flags
 RFLAGS = -Wall -Werror -I$(COMMON_INCLUDE_DIR) -I$(AUTOGEN_DIR) -O
-DFLAGS = -Wall -I$(COMMON_INCLUDE_DIR) -g
 
 # Linking and Builing Flags
-LDFLAGS += $(shell autoopts-config ldflags)
+LDFLAGS += $(shell autoopts-config ldflags) -lpcre
 
 
 # TARGETS:
@@ -62,8 +61,8 @@ compile_all: server-objs server-fsm.o serveropts.o move_objs
 # Main server object files
 server-objs:
 	$(CC) $(STD) -c $(RFLAGS) -I$prefix/include \
-    server.c my_socket.c main.c $(COMMON_SOURCE_DIR)/*.c \
-    server_fsm_handlers.c
+    $(COMMON_SOURCE_DIR)/*.c \
+    server.c my_socket.c main.c server_fsm_handlers.c parser.c
 
 # Compiling Options with Autogen
 serveropts.o: $(AUTOGEN_DIR)/serveropts.c
