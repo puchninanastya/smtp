@@ -22,8 +22,8 @@
 
 /* MAIL CONTENT: */
 
-#define RE_MAIL_DATA R_CRLF // TODO: add REXP for ascii data
-#define RE_MAIL_END "." REXP_CRLF
+#define RE_MAIL_DATA "[\\x00-\\x7F]" RE_CRLF
+#define RE_MAIL_END "^." RE_CRLF
 
 /* RESPONSES: */
 
