@@ -11,7 +11,8 @@ extern struct server my_server;
 
 int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
 {
-    fcntl(client_fd, F_SETFL, O_NONBLOCK);
+    printf( "Handle accepted" );
+    fcntl( client_fd, F_SETFL, O_NONBLOCK );
     if ( my_server.max_fd >= my_server.clients_size ) {
         printf( "Reallocing clients array.\n" );
         my_server.clients = realloc( my_server.clients,

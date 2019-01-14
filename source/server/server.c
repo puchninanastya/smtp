@@ -32,7 +32,6 @@ int server_initialize()
 
 void server_update_fd_sets()
 {
-    // TODO: check do we need to set write for server socket
     printf( "Updating fd sets for select...\n" );
 
     /* Adding server socket */
@@ -98,7 +97,7 @@ int server_run()
             while ( current_client != NULL ) {
 
                 if ( FD_ISSET( current_client->data, my_server.read_fds_set ) ) {
-                    handle_received_message( current_client->data );
+                    handle_client_read( current_client->data );
                 } else if ( FD_ISSET( current_client->data, my_server.write_fds_set ) ) {
                     printf( "ATTENTION! No handler for send message!!!\n" );
                     //handle_send_message( current_client->data );
@@ -130,7 +129,7 @@ void handle_new_connection()
     printf( "Client accepted and client socket added to clients array.\n" );
 }
 
-int handle_received_message( int client_fd )
+int handle_client_read(int client_fd)
 {
     printf( "Trying to read message from client with fd %d...\n", client_fd );
     char buffer[BUFFER_SIZE];
@@ -142,6 +141,8 @@ int handle_received_message( int client_fd )
     } else {
         printf( "Message \"%s\" received from client.\n", buffer );
         send_message_to_client( client_fd );
+        // копируем временный буфер в буфер клиента
+
     }
     return 0;
 }
