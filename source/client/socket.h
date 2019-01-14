@@ -1,5 +1,5 @@
 //
-// Created by Eldo on 14.01.2019.
+// Created by Yulia on 14.01.2019.
 //
 
 #ifndef SMTP_MTA_SOCKET_H
