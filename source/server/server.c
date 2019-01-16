@@ -8,6 +8,7 @@
 
 #include "server.h"
 #include "my_socket.h"
+#include "parser.h"
 #include "config.h"
 #include "error_fail.h"
 
@@ -26,6 +27,9 @@ int server_initialize()
     my_server.read_fds_set  = ( fd_set* ) malloc( sizeof ( fd_set) );
     my_server.write_fds_set = ( fd_set* ) malloc( sizeof ( fd_set ) );
     my_server.exceptions_fds_set = ( fd_set* ) malloc( sizeof ( fd_set ) );
+    if ( re_initialize() == 0 ) {
+        fail_on_error( "Can not initialize regular expressions for parser!" );
+    }
     printf( "Server successfully initialized.\n" );
     return 0;   
 }
@@ -50,6 +54,7 @@ void server_update_fd_sets()
         }
         current_client = current_client->next;
     }
+    printf( "Adding client to fd set completed.\n" );
 
     FD_ZERO( my_server.write_fds_set );
 
@@ -71,7 +76,7 @@ int server_run()
         int activity = pselect( my_server.max_fd + 1, my_server.read_fds_set, my_server.write_fds_set,
                             my_server.exceptions_fds_set, NULL, NULL );
         
-        printf( "PSelect woke up with activity: %d\n", activity );
+        printf( "Pselect woke up with activity: %d\n", activity );
 
         switch ( activity ) {
         case -1: 
@@ -132,18 +137,25 @@ void handle_new_connection()
 int handle_client_read(int client_fd)
 {
     printf( "Trying to read message from client with fd %d...\n", client_fd );
+
+    client_info* client = my_server.clients[ client_fd ];
+
     char buffer[BUFFER_SIZE];
-    ssize_t actual_received = read( client_fd, buffer, BUFFER_SIZE );
+    memset( buffer, 0, BUFFER_SIZE );
+
+    ssize_t actual_received = recv( client_fd, buffer, BUFFER_SIZE, 0 );
+
     if ( actual_received < 0 ) {
         fail_on_error( "Can not read data from client!" );
     } else if ( actual_received == 0 ) {
         close_client_connection( client_fd );
     } else {
-        printf( "Message \"%s\" received from client.\n", buffer );
-        send_message_to_client( client_fd );
-        // копируем временный буфер в буфер клиента
+        printf( "Message \"%s\" received from client, message lenght: %zd.\n", buffer, actual_received );
+        memcpy( client->buffer, buffer, actual_received );
 
+        send_message_to_client( client_fd );
     }
+
     return 0;
 }
 
@@ -171,5 +183,6 @@ void close_client_connection( int client_fd )
 void server_close() 
 {
     close( my_server.server_socket_fd );
-    printf( "Server socket is closed.\n" );
+    re_finalize();
+    printf( "Server is closed.\n" );
 }

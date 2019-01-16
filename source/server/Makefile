@@ -23,7 +23,7 @@ AUTOGEN_DIR = autogen
 RFLAGS = -Wall -Werror -I$(COMMON_INCLUDE_DIR) -I$(AUTOGEN_DIR) -O
 
 # Linking and Builing Flags
-LDFLAGS += $(shell autoopts-config ldflags) -lpcre
+LDFLAGS += $(shell autoopts-config ldflags) -lpcre2-8
 
 
 # TARGETS:
