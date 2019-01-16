@@ -22,8 +22,8 @@
 
 /* MAIL CONTENT: */
 
-#define RE_MAIL_END "^." RE_CRLF
-#define RE_MAIL_DATA "[\\x00-\\x7F]" RE_CRLF
+#define RE_MAIL_END "^\\." RE_CRLF
+#define RE_MAIL_DATA "[\\x00-\\x7F]+" RE_CRLF
 
 /* RESPONSES: */
 

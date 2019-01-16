@@ -6,17 +6,17 @@
 
 // Regular Expressions patterns for SMTP commands from smtp_re_commands
 const char* smtp_re_patterns[ SMTP_RE_CMNDS_COUNTER ] = {
-        "^NOOP\\r\\n",
-        "^HELO:\\s*<.+>",
-        "^EHLO:\\s*<.+>\\r\\n",
-        "^MAIL FROM:\\s*<.+>\\r\\n",
-        "^RCPT TO:\\s*<(.+@.+)>\\r\\n",
-        "^VRFY:\\s*<.+>\\r\\n",
-        "^DATA\\r\\n",
-        "^RSET\\r\\n",
-        "^QUIT\\r\\n",
-        "^\\.\\r\\n",
-        "^[\\x00-\\x7F]+"
+        RE_CMND_NOOP,
+        RE_CMND_HELO,
+        RE_CMND_EHLO,
+        RE_CMND_MAIL,
+        RE_CMND_RCPT,
+        RE_CMND_VRFY,
+        RE_CMND_DATA,
+        RE_CMND_RSET,
+        RE_CMND_QUIT,
+        RE_MAIL_END,
+        RE_MAIL_DATA
 };
 
 // Regular expressions compiled with PCRE2
