@@ -24,6 +24,7 @@ struct client_info {
 	int socket_fd;
 	char* buffer;
 	int buffer_read_offset;
+	int buffer_data_size;
 	int mail_header_received;
 	mail** mail;
 };
