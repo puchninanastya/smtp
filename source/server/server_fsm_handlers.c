@@ -11,6 +11,8 @@
 #include "server.h"
 #include "config.h"
 #include "error_fail.h"
+#include "helpers.h"
+#include "my_socket.h"
 
 extern struct server my_server;
 
@@ -50,54 +52,29 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
 
 int HANDLE_CMND_HELO( int client_fd, te_smtp_server_state nextState )
 {
-    printf( "Handle command HELO.\n" );
+    printf( "Handling command HELO...\n" );
     client_info* client = my_server.clients[ client_fd ];
 
-    // TODO: add DNS
+    // TODO: add DNS checking
 
-    /* find domain in command data */
+    /* compare command data address and real client ip address */
 
-    // cut off the end of line in command buffer
-    char* eol = strstr( client->buffer, "\r\n");
-    eol[0] = '\0';
-    char* command_data = ( char* ) malloc( BUFFER_SIZE );
-    strcpy(command_data, &client->buffer[5]);
-    printf( "Debug: Command data copied: %s\n", command_data );
-
-    // skip spaces and < to find start position
-    int start = 0;
-    for ( start = 0;
-        command_data[ start ] == ' ' || command_data[ start ] == '<';
-        start++ );
-
-    int len = strlen( command_data ) - start - 1; // -1 is for '>'
-    printf( "Debug: Command data real length: %d\n", len );
-
-    char* host = malloc( len + 1 ); // TODO: check
-    strncpy( host, &command_data[ start ], len );
+    char* host = find_domain( client-> buffer );
     printf( "Debug: Host: %s\n", host );
 
-    /* compare host from command data and real ip address */
-
-    struct sockaddr_in peer;
-    unsigned int peer_len = sizeof( peer );
-
-    if ( getpeername ( client_fd, ( struct sockaddr* )( &peer ), &peer_len ) == -1) {
-        fail_on_error( "getpeername() failed" );
-    }
-
-    char* host_ip = inet_ntoa( peer.sin_addr );
-    printf("Peer's IP address is: %s\n", host_ip );
-    printf("Peer's port is: %d\n", ( int ) ntohs( peer.sin_port ) );
+    char* host_ip = get_socket_ip_address( client_fd );
+    printf( "Debug: Peer's IP address is: %s\n", host_ip );
 
     if ( strcmp( host, host_ip ) == 0 ) {
         printf( "Client's (%d) address is verified.\r\n", client_fd );
-        send_message_to_client( client_fd, RE_RESP_OK );
     } else {
+        // it doesn't matter
         printf( "Client's (%d) address is not verified!\r\n", client_fd );
-        send_message_to_client( client_fd, RE_RESP_OK );
     }
 
+    send_message_to_client( client_fd, RE_RESP_OK );
+
+    printf( "Handling command HELO finished.\n" );
     return nextState;
 }
 

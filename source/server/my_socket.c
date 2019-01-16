@@ -42,3 +42,17 @@ int create_socket_on_port( int port )
 
     return socket_fd;
 }
+
+
+char* get_socket_ip_address( int socket_fd ) {
+    struct sockaddr_in peer;
+    unsigned int peer_len = sizeof( peer );
+
+    if ( getpeername ( socket_fd, ( struct sockaddr* )( &peer ), &peer_len ) == -1) {
+        fail_on_error( "getpeername() failed" );
+    }
+
+    char* host_ip = inet_ntoa( peer.sin_addr );
+
+    return host_ip;
+}
