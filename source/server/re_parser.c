@@ -27,7 +27,7 @@ int re_initialize() {
     int code = 0;
 
     for ( int re_name = 0; re_name < SMTP_RE_CMNDS_COUNTER; re_name++ ) {
-        code |= re_compile(re_name);
+        code |= re_compile( re_name );
         printf( "Debug: Re compiled reg exp %d with result code %d.\n", re_name, code );
     }
 
@@ -58,10 +58,10 @@ int re_compile( smtp_re_commands re_pattern_name )
             NULL );                 /* use default compile context */
 
     if ( !smtp_re_compiled[ re_pattern_name ] ) {
-        PCRE2_UCHAR buffer[256];
-        pcre2_get_error_message(errornumber, buffer, sizeof(buffer));
-        printf("PCRE2 compilation failed at offset %d: %s\n", (int)erroroffset,
-               buffer);
+        PCRE2_UCHAR buffer[ 256 ];
+        pcre2_get_error_message (errornumber, buffer, sizeof( buffer ) );
+        printf( "PCRE2 compilation failed at offset %d: %s\n", ( int )erroroffset,
+               buffer );
         return 1;
     }
 
@@ -71,7 +71,7 @@ int re_compile( smtp_re_commands re_pattern_name )
 smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int* matchdatalen )
 {
     PCRE2_SPTR subject = ( PCRE2_SPTR )text;
-    size_t subject_length = strlen((  char *) subject );
+    size_t subject_length = strlen( (  char *) subject );
 
     int ci;
     int rc;
@@ -162,7 +162,6 @@ smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int*
         ( *matchdata )[ n ] = calloc( sz + 1, sizeof( char ) );
         memcpy( ( *matchdata )[ n ], ( char* )( subject + ovector[ 2 * n ] ), sz * sizeof( char ) );
 
-        //LOG("  %s\n", (*matchdata)[n]);
         printf("  (%d) %*s: %.*s\n", n, name_entry_size - 3, tabptr + 2, ( int )( ovector[ 2 * n + 1]
         - ovector[ 2 * n ] ), subject + ovector[ 2 * n ] );
 

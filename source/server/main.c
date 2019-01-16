@@ -13,8 +13,8 @@ struct server my_server;
 void exit_handler( int signal ) 
 {
     // Find out which signal we're handling
-    const char *signal_name;
-    switch (signal) {
+    const char* signal_name;
+    switch ( signal ) {
         case SIGHUP:
             signal_name = "SIGHUP";
             break;
@@ -31,11 +31,11 @@ void exit_handler( int signal )
             signal_name = "SIGINT";
             break;
         default:
-            fprintf(stderr, "Caught wrong signal: %d\n", signal);
+            fprintf( stderr, "Caught wrong signal: %d\n", signal );
             return;
     }
 
-    printf("\nCaught signal %s, exiting now..\n", signal_name);
+    printf( "\nCaught signal %s, exiting now..\n", signal_name );
 
     // Close server socket to release port
     server_close();
@@ -73,16 +73,16 @@ int main( int argc, char **argv )
 {
     {
         int optct = optionProcess( &serverOptions, argc, argv );
-        printf("My options process returns %d.\n", optct);
+        printf( "My options process returns %d.\n", optct );
         argc -= optct;
         argv += optct;
     }
 
     if ( set_handler_to_signals() ) {
-        printf("Can not set handlers to signals.\n");
+        printf( "Can not set handlers to signals.\n" );
         return 1;
     }
-	printf("Successfully set exit handler to signals.\n");
+	printf( "Successfully set exit handler to signals.\n" );
 
     server_initialize();
     server_run();
