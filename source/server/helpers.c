@@ -1,4 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "helpers.h"
+#include "config.h"
 
 char* find_domain( char* buffer ) {
 
@@ -6,7 +11,7 @@ char* find_domain( char* buffer ) {
     char* eol = strstr( buffer, "\r\n");
     eol[0] = '\0';
     char* command_data = ( char* ) malloc( BUFFER_SIZE );
-    strcpy(command_data, &client->buffer[5]);
+    strcpy(command_data, &buffer[5]);
     printf( "Debug: Command data copied: %s\n", command_data );
 
     // skip spaces and < to find start position

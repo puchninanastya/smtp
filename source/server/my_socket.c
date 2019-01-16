@@ -6,6 +6,7 @@
 #include <string.h> 
 #include <stdio.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 #include "my_socket.h"
 #include "error_fail.h"

@@ -3,8 +3,6 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #include "rexprs.h"
 #include "server_fsm_handlers.h"
@@ -59,7 +57,7 @@ int HANDLE_CMND_HELO( int client_fd, te_smtp_server_state nextState )
 
     /* compare command data address and real client ip address */
 
-    char* host = find_domain( client-> buffer );
+    char* host = find_domain( client->buffer );
     printf( "Debug: Host: %s\n", host );
 
     char* host_ip = get_socket_ip_address( client_fd );
