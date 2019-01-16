@@ -38,6 +38,8 @@ void server_update_fd_sets()
 {
     printf( "Updating fd sets for select...\n" );
 
+    /* Reading server's fd set */
+
     /* Adding server socket */
     FD_ZERO( my_server.read_fds_set );
     FD_SET( my_server.server_socket_fd, my_server.read_fds_set );
@@ -54,15 +56,16 @@ void server_update_fd_sets()
         }
         current_client = current_client->next;
     }
-    printf( "Adding client to fd set completed.\n" );
 
+    /* Writing server's fd set */
     FD_ZERO( my_server.write_fds_set );
 
+
+    /* Expections server's fd sets */
     FD_ZERO( my_server.exceptions_fds_set );
     FD_SET( my_server.server_socket_fd, my_server.exceptions_fds_set );
 
     printf("Fd sets successfully updated.\n");
-    return;   
 }
 
 int server_run() 

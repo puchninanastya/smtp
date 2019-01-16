@@ -16,7 +16,8 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
     if ( my_server.max_fd >= my_server.clients_size ) {
         printf( "Reallocing clients array.\n" );
         my_server.clients = realloc( my_server.clients,
-                ( my_server.max_fd / CLIENTS_REALLOC_STEP + 1) * CLIENTS_REALLOC_STEP * sizeof( client_info* ) );
+                ( my_server.max_fd / CLIENTS_REALLOC_STEP + 1) * CLIENTS_REALLOC_STEP
+                * sizeof( client_info* ) );
         my_server.clients_size += CLIENTS_REALLOC_STEP;
     }
     client_info* client = malloc( sizeof( client_info ) );
