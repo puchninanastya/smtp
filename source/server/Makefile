@@ -6,8 +6,6 @@
 
 # Main program name
 PROG_NAME = smtp_server
-# Report name
-REPORT_NAME = report.pdf
 
 # Compiler
 CC = gcc
@@ -23,15 +21,14 @@ AUTOGEN_DIR = autogen
 
 # Compilation Flags
 RFLAGS = -Wall -Werror -I$(COMMON_INCLUDE_DIR) -I$(AUTOGEN_DIR) -O
-DFLAGS = -Wall -I$(COMMON_INCLUDE_DIR) -g
 
 # Linking and Builing Flags
-LDFLAGS += $(shell autoopts-config ldflags)
+LDFLAGS += $(shell autoopts-config ldflags) -lpcre2-8
 
 
 # TARGETS:
 
-all: clean build_dir compile-all smtp_server test_client report
+all: clean build_dir compile_all smtp_server test_client
 
 smtp_server:
 	$(CC) $(STD) $(LDFLAGS) -o ./$(BUILD_DIR)/$(PROG_NAME) \
@@ -41,31 +38,31 @@ test_client:
 	$(CC) $(STD) $(RFLAGS) -o ./$(BUILD_DIR)/test_client \
 	test_client.c $(COMMON_SOURCE_DIR)/*.c
 
-report:
-	echo "Report with name $(REPORT_NAME) was not created. Kek."
-
 
 # ADDITIONAL:
 
 clean:
 	rm -rf *.o ./build
 
+.PHONY: build_dir
 build_dir:
 	mkdir -p $(BUILD_DIR)
 
+.PHONY: move_objs
 move_objs:
 	mv *.o $(BUILD_DIR)
 
 
 # COMPILATION:
 
-compile-all: server-objs server-fsm.o serveropts.o move_objs
+.PHONY: compile_all
+compile_all: server-objs server-fsm.o serveropts.o move_objs
 
 # Main server object files
 server-objs:
 	$(CC) $(STD) -c $(RFLAGS) -I$prefix/include \
-    server.c my_socket.c main.c $(COMMON_SOURCE_DIR)/*.c \
-    server_fsm_handlers.c
+    $(COMMON_SOURCE_DIR)/*.c \
+    server.c my_socket.c main.c server_fsm_handlers.c re_parser.c
 
 # Compiling Options with Autogen
 serveropts.o: $(AUTOGEN_DIR)/serveropts.c
@@ -78,12 +75,15 @@ server-fsm.o: $(AUTOGEN_DIR)/server-fsm.c
 
 # GENERAION OF AUTOGEN HEADERS AND SOURCE FILES:
 
+.PHONY: autogen_all
 autogen_all: autogen_serveropts autogen_server-fsm
 
 # Generate check options files with autogen
+.PHONY: autogen_serveropts
 autogen_serveropts: $(AUTOGEN_DIR)/serveropts.def
 	SHELL=/bin/sh cd $(AUTOGEN_DIR)/ && autogen -L $prefix/share/autogen ./serveropts.def
 
 # Generate Finite State Machine files with autogen
+.PHONY: autogen_server-fsm
 autogen_server-fsm: $(AUTOGEN_DIR)/server.def
 	SHELL=/bin/sh cd $(AUTOGEN_DIR)/ && autogen ./server.def

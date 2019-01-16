@@ -148,7 +148,7 @@ static tOptDesc optDesc[OPTION_CT] = {
   {  /* entry idx, value */ 0, VALUE_OPT_PORT,
      /* equiv idx, value */ 0, VALUE_OPT_PORT,
      /* equivalenced to  */ NO_EQUIVALENT,
-     /* min, max, act ct */ 1, 1, 0,
+     /* min, max, act ct */ 0, 1, 0,
      /* opt state flags  */ PORT_FLAGS, 0,
      /* last opt argumnt */ { NULL }, /* --port */
      /* arg list/cookie  */ NULL,
@@ -160,7 +160,7 @@ static tOptDesc optDesc[OPTION_CT] = {
   {  /* entry idx, value */ 1, VALUE_OPT_MAILDIR,
      /* equiv idx, value */ 1, VALUE_OPT_MAILDIR,
      /* equivalenced to  */ NO_EQUIVALENT,
-     /* min, max, act ct */ 1, 1, 0,
+     /* min, max, act ct */ 0, 1, 0,
      /* opt state flags  */ MAILDIR_FLAGS, 0,
      /* last opt argumnt */ { NULL }, /* --maildir */
      /* arg list/cookie  */ NULL,
@@ -172,7 +172,7 @@ static tOptDesc optDesc[OPTION_CT] = {
   {  /* entry idx, value */ 2, VALUE_OPT_FILE,
      /* equiv idx, value */ 2, VALUE_OPT_FILE,
      /* equivalenced to  */ NO_EQUIVALENT,
-     /* min, max, act ct */ 1, 1, 0,
+     /* min, max, act ct */ 0, 1, 0,
      /* opt state flags  */ FILE_FLAGS, 0,
      /* last opt argumnt */ { NULL }, /* --file */
      /* arg list/cookie  */ NULL,

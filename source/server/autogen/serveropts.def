@@ -1,4 +1,5 @@
 AutoGen Definitions options;
+
 prog-name     = server;
 prog-title    = "SMTP Mail Transfer Agent Server";
 test_main;
@@ -14,7 +15,7 @@ flag = {
     arg-range = 110;
     arg-range = "1024->65000";
     max       = 1;              /* Не более одного раза */
-    min       = 1;              /* Обязательный параметр */
+    min       = 0;              /* Необязательный параметр */
     descrip   = "Port to bind";
 };
 
@@ -23,7 +24,7 @@ flag = {
     value     = d;              /* Краткий флаг (-p) */
     arg-type  = string;
     max       = 1;              /* Не более одного раза */
-    min       = 1;              /* Обязательный параметр */
+    min       = 0;              /* Необязательный параметр */
     descrip   = "Path to maildir directory";
 };
 
@@ -32,6 +33,6 @@ flag = {
     value     = f;              /* Краткий флаг (-f) */
     arg-type  = string;
     max       = 1;              /* Не более одного раза */
-    min       = 1;              /* Обязательный параметр */
+    min       = 0;              /* Необязательный параметр */
     descrip   = "File to proceed";
 };
