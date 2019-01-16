@@ -14,7 +14,7 @@ void server_update_fd_sets();
 int server_run();
 void handle_new_connection();
 int handle_client_read( int client_fd );
-int send_message_to_client( int client_fd );
+//int send_message_to_client( int client_fd );
 void close_client_connection( int client_fd );
 void server_close();
 

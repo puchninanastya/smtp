@@ -45,7 +45,7 @@ int main( int argc, char **argv )
 
 
     printf( "Sleeping...\n" );
-    sleep(3);
+    sleep( 3 );
     printf( "Woke up.\n" );
 
     printf( "Trying to read data from server...\n" );

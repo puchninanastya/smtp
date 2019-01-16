@@ -27,16 +27,15 @@
 
 /* RESPONSES: */
 
-#define RE_RESP_READY 220
-#define RE_RESP_CLOSE 221
-#define RE_RESP_OK 250
-#define RE_RESP_START_MAIL 354
+#define RE_RESP_READY "220 Ready\r\n"
+#define RE_RESP_CLOSE "221 Close\r\n"
+#define RE_RESP_OK "250 OK\r\n"
+#define RE_RESP_START_MAIL "354 Waiting for data\r\n"
 
-#define RE_RESP_ERR_WRONG_CMND 500
-#define RE_RESP_ERR_WRONG_ARGS 501
-#define RE_RESP_ERR_NOT_IMPL_CMND 502
-#define RE_RESP_ERR_BAD_SEQ 503
-#define RE_RESP_ERR_MAILBOX_UNAVAIL 550
-#define RE_RESP_ERR_MAILBOX_INCORRECT 553
+#define RE_RESP_ERR_WRONG_CMND "500 Syntax error, incorrect command\r\n"
+#define RE_RESP_ERR_NOT_IMPL_CMND "502 Command not implemeted\r\n"
+#define RE_RESP_ERR_BAD_SEQ "503 Bad sequence of commands\r\n"
+#define RE_RESP_ERR_MAILBOX_UNAVAIL "550 Mailbox unavailable\r\n"
+#define RE_RESP_ERR_MAILBOX_INCORRECT "553 Syntax error, incorrect email address\r\n"
 
 #endif //SMTP_MTA_REXPRS_H

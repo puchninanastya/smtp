@@ -167,22 +167,8 @@ int handle_client_read(int client_fd)
                 ( te_smtp_server_event ) cmnd, client_fd );
         client->smtp_state = next_st;
         printf( "New current state for client %d is %d.\n", client_fd, client->smtp_state );
-
-        send_message_to_client( client_fd );
     }
 
-    return 0;
-}
-
-int send_message_to_client( int client_fd )
-{
-    printf( "Trying to send message to client with fd %d...\n", client_fd );
-    const char* message_to_send = "OK!\r\n";
-    ssize_t actual_sent = send( client_fd, message_to_send, strlen( message_to_send ), 0 );
-    if ( actual_sent < 0 ) {
-        fail_on_error( "Can not sent data to client!" );
-    }
-    printf( "Message \"%s\" sent to client.\n", message_to_send );
     return 0;
 }
 

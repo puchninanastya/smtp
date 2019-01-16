@@ -3,6 +3,8 @@
 
 #include "autogen/server-fsm.h"
 
+int send_message_to_client( int client_fd, const char* response );
+
 /* SMTP FSM HANDLERS: */
 
 int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState );
