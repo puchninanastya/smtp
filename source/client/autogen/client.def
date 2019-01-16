@@ -1,0 +1,69 @@
+Autogen Definitions fsm;
+
+method = case;
+type   = reentrant;
+
+prefix = smtp_server;
+
+cookie = "int client_socket_fd";
+
+state  = int, connected, ready, timeout, send_echlo, send_helo, send_mail, check_mail_code, send_rcp, check_rcp_code, send_data, quit;
+event  = cmd_com, cmd_ready, cmd_helo, cmd_ehlo, cmd_error, cmd_mail, cmd_check, cmd_rcpt, cmd_noop, cmd_data, cmd_quit;
+
+transition =
+{ tst  = '*';             tev = conn_accepted;       next = ready;                ttype = accepted; };
+
+transition =
+{ tst  = int;             tev = cmd_noop;            next = int;                  ttype = noop; },
+{ tst  = int;             tev = cmd_com;             next = connected;            ttype = ; },
+{ tst  = int;             tev = cmd_timeout;         next = timeout;              ttype = ; };
+
+transition =
+{ tst  = connected;       tev = cmd_noop;            next = connected;            ttype = noop; },
+{ tst  = connected;       tev = cmd_ready;           next = ready;                ttype = ; },
+{ tst  = connected;       tev = cmd_timeout;         next = timeout;              ttype = ; };
+
+transition =
+{ tst  = ready;           tev = cmd_noop;            next = ready;                ttype = noop; },
+{ tst  = ready;           tev = cmd_helo;            next = send_helo;            ttype = ; },
+{ tst  = ready;           tev = cmd_ehlo;            next = send_ehlo;            ttype = ; },
+{ tst  = ready;           tev = cmd_timeout;         next = timeout;              ttype = ; };
+
+transition =
+{ tst  = send_ehlo;         tev = cmd_noop;          next = send_ehlo;            ttype = noop; },
+{ tst  = send_ehlo;         tev = cmd_mail;          next = need_data;            ttype = ; },
+{ tst  = send_ehlo;         tev = cmd_timeout;       next = timeout;              ttype = ; };
+
+transition =
+{ tst  = send_helo;         tev = cmd_noop;          next = send_helo;            ttype = noop; },
+{ tst  = send_helo;         tev = cmd_mail;          next = need_data;            ttype = ; },
+{ tst  = send_helo;         tev = cmd_timeout;       next = timeout;              ttype = ; };
+
+transition =
+{ tst  = send_mail;         tev = cmd_noop;          next = send_mail;            ttype = noop; },
+{ tst  = send_mail;         tev = cmd_check;         next = check_mail_code;      ttype = ; },
+{ tst  = send_mail;         tev = cmd_timeout;       next = timeout;              ttype = ; };
+
+transition =
+{ tst  = check_mail_code;    tev = cmd_noop;         next = check_mail_code;      ttype = noop; },
+{ tst  = check_mail_code;    tev = cmd_rcpt;         next = send_rcpt;            ttype = ; },
+{ tst  = check_mail_code;    tev = cmd_error;        next = cmd_error;            ttype = ; },
+{ tst  = check_mail_code;    tev = cmd_timeout;      next = timeout;              ttype = ; };
+
+transition =
+{ tst  = send_rcpt;         tev = cmd_noop;          next = send_rcpt;;           ttype = noop; },
+{ tst  = send_rcpt;         tev = cmd_check;         next = check_mail_code;      ttype = ; },
+{ tst  = send_rcpt;         tev = cmd_timeout;       next = timeout;              ttype = ; };
+
+
+transition =
+{ tst  = check_rcp_code;    tev = cmd_noop;         next = check_rcp_code;       ttype = noop; },
+{ tst  = check_rcp_code;    tev = cmd_data;         next = send_data;            ttype = ; },
+{ tst  = check_rcp_code;    tev = cmd_error;        next = cmd_error;            ttype = ; },
+{ tst  = check_rcp_code;    tev = cmd_timeout;      next = timeout;              ttype = ; };
+
+
+transition =
+{ tst  = send_data;         tev = cmd_noop;         next = send_data             ttype = noop; },
+{ tst  = send_data;         tev = cmd_quit;         next = quit;                 ttype = ; },
+{ tst  = send_data;         tev = cmd_timeout;      next = timeout;              ttype = ; };
