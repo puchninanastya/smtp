@@ -54,6 +54,8 @@ int main( int argc, char **argv )
     ssize_t actual_read = read( client_socket_fd, buffer, sizeof( buffer ) );
     if ( actual_read < 0 ) {
         fail_on_error( "Can not read data from server!" );
+    } else if ( actual_read == 0 ) {
+        fail_on_error( "Empty read from server! Testing failed!!!" );
     }
     printf( "Message \"%s\" received from server\n", buffer );
 
