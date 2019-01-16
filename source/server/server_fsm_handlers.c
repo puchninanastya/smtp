@@ -32,50 +32,60 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
 
 int HANDLE_CMND_HELO( int client_fd, te_smtp_server_state nextState )
 {
-    return 0;
+    printf( "Handle command HELO.\n" );
+    return nextState;
 }
 
 int HANDLE_CMND_EHLO( int client_fd, te_smtp_server_state nextState )
 {
-    return 0;
+    printf( "Handle command EHLO.\n" );
+    return nextState;
 }
 
 int HANDLE_CMND_MAIL( int client_fd, te_smtp_server_state nextState )
 {
-    return 0;
+    printf( "Handle command MAIL.\n" );
+    return nextState;
 }
 
 int HANDLE_CMND_RCPT( int client_fd, te_smtp_server_state nextState )
 {
-    return 0;
+    printf( "Handle command RCPT.\n" );
+    return nextState;
 }
 
 int HANDLE_CMND_DATA( int client_fd, te_smtp_server_state nextState )
 {
-    return 0;
+    printf( "Handle command DATA.\n" );
+    return nextState;
 }
 
 int HANDLE_MAIL_DATA( int client_fd, te_smtp_server_state nextState )
 {
-    return 0;
+    printf( "Handle mail data.\n" );
+    return nextState;
 }
 
 int HANDLE_MAIL_SAVED( int client_fd, te_smtp_server_state nextState )
 {
-    return 0;
+    printf( "Handle mail saved.\n" );
+    return nextState;
 }
 
 int HANDLE_MAIL_END( int client_fd, te_smtp_server_state nextState )
 {
-    return 0;
+    printf( "Handle mail end.\n" );
+    return nextState;
 }
 
 int HANDLE_CMND_RSET( int client_fd, te_smtp_server_state nextState )
 {
-    return 0;
+    printf( "Handle command RSET.\n" );
+    return nextState;
 }
 
 int HANDLE_CLOSE( int client_fd, te_smtp_server_state nextState )
 {
-    return 0;
+    printf( "Handle close.\n" );
+    return nextState;
 }
