@@ -15,8 +15,8 @@ const char* smtp_re_patterns[ SMTP_RE_CMNDS_COUNTER ] = {
         "^DATA\\r\\n",
         "^RSET\\r\\n",
         "^QUIT\\r\\n",
-        "^[\\x00-\\x7F]+",
-        "^\\r\\n\\.\\r\\n"
+        "^\\.\\r\\n",
+        "^[\\x00-\\x7F]+"
 };
 
 // Regular expressions compiled with PCRE2
