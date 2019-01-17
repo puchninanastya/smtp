@@ -62,7 +62,7 @@ compile_all: server-objs server-fsm.o serveropts.o move_objs
 server-objs:
 	$(CC) $(STD) -c $(RFLAGS) -I$prefix/include \
     $(COMMON_SOURCE_DIR)/*.c \
-    server.c my_socket.c main.c server_fsm_handlers.c re_parser.c helpers.c
+    server.c my_socket.c main.c server_fsm_handlers.c re_parser.c helpers.c mail.c client_info.c
 
 # Compiling Options with Autogen
 serveropts.o: $(AUTOGEN_DIR)/serveropts.c

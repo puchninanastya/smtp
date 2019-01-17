@@ -200,7 +200,9 @@ int HANDLE_MAIL_END( int client_fd, te_smtp_server_state nextState )
 int HANDLE_CMND_RSET( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle command RSET.\n" );
+    reset_client_info( client_fd );
     send_response_to_client( client_fd, RE_RESP_OK );
+    printf( "Handling command RSET finished.\n" );
     return nextState;
 }
 

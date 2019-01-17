@@ -10,4 +10,6 @@ struct mail {
     int data_length;
 };
 
+void free_mail( mail* mail );
+
 #endif //SMTP_MTA_MAIL_H
