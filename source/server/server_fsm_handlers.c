@@ -92,7 +92,30 @@ int HANDLE_CMND_HELO( int client_fd, char*** matchdata, int matchdatalen, te_smt
 int HANDLE_CMND_EHLO( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState )
 {
     printf( "Handle command EHLO.\n" );
+    // TODO: add DNS checking
+
+    /* compare command data address and real client ip address */
+
+    char* host = NULL;
+    if ( matchdatalen == 1 ) {
+        host = ( *matchdata )[ matchdatalen - 1 ];
+    }
+    printf( "Debug: Host: %s\n", host );
+
+    char* host_ip = get_socket_ip_address( client_fd );
+    printf( "Debug: Peer's IP address is: %s\n", host_ip );
+
+    if ( strcmp( host, host_ip ) == 0 ) {
+        printf( "Client's (%d) address is verified.\r\n", client_fd );
+    } else {
+        // it doesn't matter
+        printf( "Client's (%d) address is not verified!\r\n", client_fd );
+    }
+
+    // TODO: to add supported smtp commands to response?
     send_response_to_client( client_fd, RE_RESP_OK );
+
+    printf( "Handling command EHLO finished.\n" );
     return nextState;
 }
 
