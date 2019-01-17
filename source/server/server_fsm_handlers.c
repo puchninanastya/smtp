@@ -103,9 +103,9 @@ int HANDLE_CMND_MAIL( int client_fd, char*** matchdata, int matchdatalen, te_smt
     char* email_address = NULL;
     if ( matchdatalen == 1 && ( strcmp(( *matchdata )[ matchdatalen - 1 ], "") != 0 ) ) {
         email_address = ( *matchdata )[ matchdatalen - 1 ];
-        printf( "Debug: Mail to email address: %s.\n", email_address );
+        printf( "Debug: 'Mail from' email address: %s.\n", email_address );
     } else {
-        printf("Debug: Mail to without email address.\n");
+        printf("Debug: 'Mail from' without email address.\n");
     }
 
     send_response_to_client( client_fd, RE_RESP_OK );
@@ -116,8 +116,21 @@ int HANDLE_CMND_MAIL( int client_fd, char*** matchdata, int matchdatalen, te_smt
 
 int HANDLE_CMND_RCPT( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState )
 {
-    printf( "Handle command RCPT.\n" );
+    printf( "Handling command RCPT...\n" );
+
+    //client_info* client = my_server.clients[ client_fd ];
+
+    char* email_address = NULL;
+    if ( matchdatalen == 1 && ( strcmp(( *matchdata )[ matchdatalen - 1 ], "") != 0 ) ) {
+        email_address = ( *matchdata )[ matchdatalen - 1 ];
+        printf( "Debug: 'Rcpt to' email address: %s.\n", email_address );
+    } else {
+        printf("Debug: 'Rcpt to' without email address.\n");
+    }
+
     send_response_to_client( client_fd, RE_RESP_OK );
+
+    printf( "Handling command RCPT finished.\n" );
     return nextState;
 }
 
