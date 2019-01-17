@@ -181,9 +181,13 @@ int HANDLE_CMND_RCPT( int client_fd, char*** matchdata, int matchdatalen, te_smt
 
 int HANDLE_CMND_DATA( int client_fd, te_smtp_server_state nextState )
 {
-    printf( "Handle command DATA.\n" );
+    printf( "Handling command DATA...\n" );
+    client_info* client = my_server.clients[ client_fd ];
 
-
+    // initializing a little buffer for mail data
+    client->mail->data = malloc( sizeof( char ) );
+    client->mail->data[ 0 ] = '\0';
+    client->mail->data_capacity = 0;
 
     send_response_to_client( client_fd, RE_RESP_START_MAIL );
 
@@ -193,23 +197,32 @@ int HANDLE_CMND_DATA( int client_fd, te_smtp_server_state nextState )
 
 int HANDLE_MAIL_DATA( int client_fd, te_smtp_server_state nextState )
 {
-    printf( "Handle mail data.\n" );
+    printf( "Handling mail data...\n" );
+    client_info* client = my_server.clients[ client_fd ];
 
-    // TODO: check if two dots - delete one (rfc 821)
+    // TODO: check if two dots - delete one? (rfc 821)
 
+    append_data_to_mail( client->mail, client->buffer, strlen( client->buffer ) );
+
+    printf( "Handling mail data finished.\n" );
+    return nextState;
+}
+
+int HANDLE_MAIL_END( int client_fd, te_smtp_server_state nextState )
+{
+    printf( "Handling end of mail data...\n" );
+    client_info* client = my_server.clients[ client_fd ];
+
+    send_response_to_client( client_fd, RE_RESP_OK );
+    printf( "Full client's mail data looks like: \n %s\n", client->mail->data );
+
+    printf( "Handling end of mail data finished.\n" );
     return nextState;
 }
 
 int HANDLE_MAIL_SAVED( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle mail saved.\n" );
-    send_response_to_client( client_fd, RE_RESP_OK );
-    return nextState;
-}
-
-int HANDLE_MAIL_END( int client_fd, te_smtp_server_state nextState )
-{
-    printf( "Handle mail end.\n" );
     send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }

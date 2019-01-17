@@ -156,6 +156,7 @@ int handle_client_read(int client_fd)
     } else {
         printf( "Message \"%s\" received from client, message lenght: %zd.\n",
                 buffer, actual_received );
+        memset( client->buffer, 0, BUFFER_SIZE );
         memcpy( client->buffer, buffer, actual_received );
 
         // parse for command and send response
