@@ -54,6 +54,8 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
     // and add client to clients[]
     my_server.clients[ client_fd ] = client;
 
+    send_response_to_client( client_fd, RE_RESP_READY );
+
     printf( "New client current smtp state: %d\n", my_server.clients[ client_fd ]->smtp_state );
     return nextState;
 }
@@ -172,13 +174,21 @@ int HANDLE_CMND_RCPT( int client_fd, char*** matchdata, int matchdatalen, te_smt
 int HANDLE_CMND_DATA( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle command DATA.\n" );
-    send_response_to_client( client_fd, RE_RESP_OK );
+
+
+
+    send_response_to_client( client_fd, RE_RESP_START_MAIL );
+
+    printf( "Handling command DATA finished.\n" );
     return nextState;
 }
 
 int HANDLE_MAIL_DATA( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle mail data.\n" );
+
+    // TODO: check if two dots - delete one (rfc 821)
+
     send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }
@@ -209,6 +219,6 @@ int HANDLE_CMND_RSET( int client_fd, te_smtp_server_state nextState )
 int HANDLE_CLOSE( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle close.\n" );
-    send_response_to_client( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd, RE_RESP_CLOSE );
     return nextState;
 }
