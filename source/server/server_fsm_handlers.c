@@ -17,7 +17,6 @@ extern struct server my_server;
 int send_response_to_client(int client_fd, const char *response)
 {
     printf( "Trying to send message to client with fd %d...\n", client_fd );
-    //const char* message_to_send = "OK!\r\n";
     ssize_t actual_sent = send( client_fd, response, strlen( response ), 0 );
     if ( actual_sent < 0 ) {
         fail_on_error( "Can not sent data to client!" );
@@ -26,9 +25,16 @@ int send_response_to_client(int client_fd, const char *response)
     return 0;
 }
 
+int HANDLE_CMND_NOOP( int client_fd, te_smtp_server_state nextState ) {
+    printf( "Handling command NOOP...\n" );
+    send_response_to_client( client_fd, RE_RESP_OK );
+    printf( "Handling command NOOP finished.\n" );
+    return nextState;
+}
+
 int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
 {
-    printf( "Handle accepted.\n" );
+    printf( "Handling accepted.\n" );
 
     // set up client's socket as nonblocking
     fcntl( client_fd, F_SETFL, O_NONBLOCK );
@@ -57,6 +63,8 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
     send_response_to_client( client_fd, RE_RESP_READY );
 
     printf( "New client current smtp state: %d\n", my_server.clients[ client_fd ]->smtp_state );
+
+    printf( "Handling accepted finished.\n" );
     return nextState;
 }
 
@@ -189,7 +197,6 @@ int HANDLE_MAIL_DATA( int client_fd, te_smtp_server_state nextState )
 
     // TODO: check if two dots - delete one (rfc 821)
 
-    send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }
 

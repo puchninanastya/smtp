@@ -7,6 +7,7 @@ int send_response_to_client( int client_fd, const char* response );
 
 /* SMTP FSM HANDLERS: */
 
+int HANDLE_CMND_NOOP( int client_fd, te_smtp_server_state nextState );
 int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState );
 int HANDLE_CMND_HELO( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState );
 int HANDLE_CMND_EHLO( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState );
