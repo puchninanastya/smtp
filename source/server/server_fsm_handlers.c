@@ -49,6 +49,7 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
     memset( client->buffer, 0, BUFFER_SIZE );
     client->buffer_data_size = 0;
     client->smtp_state = SMTP_SERVER_ST_READY;
+    client->mail = NULL;
 
     // and add client to clients[]
     my_server.clients[ client_fd ] = client;
@@ -98,15 +99,19 @@ int HANDLE_CMND_EHLO( int client_fd, char*** matchdata, int matchdatalen, te_smt
 int HANDLE_CMND_MAIL( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState )
 {
     printf( "Handling command MAIL...\n" );
-    //client_info* client = my_server.clients[ client_fd ];
+    client_info* client = my_server.clients[ client_fd ];
 
     char* email_address = NULL;
     if ( matchdatalen == 1 && ( strcmp(( *matchdata )[ matchdatalen - 1 ], "") != 0 ) ) {
         email_address = ( *matchdata )[ matchdatalen - 1 ];
         printf( "Debug: 'Mail from' email address: %s.\n", email_address );
     } else {
-        printf("Debug: 'Mail from' without email address.\n");
+        printf( "Debug: 'Mail from' without email address.\n" );
     }
+
+    // adding sender address to client's mail
+    client->mail = malloc(sizeof( mail ) );
+    client->mail->sender = email_address;
 
     send_response_to_client( client_fd, RE_RESP_OK );
 
@@ -117,18 +122,25 @@ int HANDLE_CMND_MAIL( int client_fd, char*** matchdata, int matchdatalen, te_smt
 int HANDLE_CMND_RCPT( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState )
 {
     printf( "Handling command RCPT...\n" );
-
-    //client_info* client = my_server.clients[ client_fd ];
+    client_info* client = my_server.clients[ client_fd ];
 
     char* email_address = NULL;
     if ( matchdatalen == 1 && ( strcmp(( *matchdata )[ matchdatalen - 1 ], "") != 0 ) ) {
         email_address = ( *matchdata )[ matchdatalen - 1 ];
         printf( "Debug: 'Rcpt to' email address: %s.\n", email_address );
     } else {
-        printf("Debug: 'Rcpt to' without email address.\n");
+        printf( "Debug: 'Rcpt to' without email address.\n" );
     }
 
-    send_response_to_client( client_fd, RE_RESP_OK );
+    if ( client->mail->recepients_num++ > MAX_RCPT_CLIENTS ) {
+        printf( "Client's mail already has max number of recepients! Can't add one more.\r\n" );
+        send_response_to_client(client_fd, RE_RESP_OK);
+    } else {
+        client->mail->recepients = malloc( sizeof( char* ) * MAX_RCPT_CLIENTS ); // TODO: change allocation (add realloc)
+        client->mail->recepients[ client->mail->recepients_num ] = email_address;
+        client->mail->recepients_num++;
+        send_response_to_client(client_fd, RE_RESP_OK);
+    }
 
     printf( "Handling command RCPT finished.\n" );
     return nextState;

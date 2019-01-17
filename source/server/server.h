@@ -26,7 +26,7 @@ struct client_info {
 	int buffer_read_offset;
 	int buffer_data_size;
 	int mail_header_received;
-	mail** mail;
+	mail* mail;
 };
 
 struct server {
