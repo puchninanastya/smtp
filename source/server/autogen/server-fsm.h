@@ -89,7 +89,9 @@ extern te_smtp_server_state
 smtp_server_step(
     te_smtp_server_state smtp_server_state,
     te_smtp_server_event trans_evt,
-    int client_socket_fd );
+    int client_socket_fd,
+    char*** matchdata,
+    int matchdatalen );
 
 #endif /* AUTOFSM_SERVER_FSM_H_GUARD */
 /*

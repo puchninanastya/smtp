@@ -132,7 +132,7 @@ void handle_new_connection()
         fail_on_error( "Can not accept client!" );
     }
     smtp_server_step( SMTP_SERVER_ST_INIT, SMTP_SERVER_EV_CONN_ACCEPTED,
-                      client_socket_fd );
+                      client_socket_fd, NULL, 0 );
     my_server.client_sockets_fds = linked_list_add_node( my_server.client_sockets_fds,
             client_socket_fd );
     printf( "Client accepted and client socket added to clients array.\n" );
@@ -163,8 +163,12 @@ int handle_client_read(int client_fd)
         int matchdatalen = 0;
         smtp_re_commands cmnd = re_match_for_command( client->buffer, &matchdata, &matchdatalen );
         printf( "Re match for command result cmnd: %d\n", cmnd );
+        printf( "Re match data len: %d\n", matchdatalen );
+        for( int i = 0; i < matchdatalen; i++ ) {
+            printf( "Re match data num %d: %s\n", i, matchdata[ i ] );
+        }
         te_smtp_server_state next_st = smtp_server_step( client->smtp_state,
-                ( te_smtp_server_event ) cmnd, client_fd );
+                ( te_smtp_server_event ) cmnd, client_fd, &matchdata, matchdatalen );
         client->smtp_state = next_st;
         printf( "New current state for client %d is %d.\n", client_fd, client->smtp_state );
     }

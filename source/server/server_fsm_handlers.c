@@ -14,7 +14,7 @@
 
 extern struct server my_server;
 
-int send_message_to_client( int client_fd, const char* response )
+int send_response_to_client(int client_fd, const char *response)
 {
     printf( "Trying to send message to client with fd %d...\n", client_fd );
     //const char* message_to_send = "OK!\r\n";
@@ -30,7 +30,7 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle accepted.\n" );
 
-    // set client socket as nonblocking
+    // set up client's socket as nonblocking
     fcntl( client_fd, F_SETFL, O_NONBLOCK );
 
     // realloc array of clients
@@ -42,7 +42,7 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
         my_server.clients_size += CLIENTS_REALLOC_STEP;
     }
 
-    // initialize client_info struct for this fd and add it to clients[]
+    // initialize client_info struct for this client_fd
     client_info* client = malloc( sizeof( client_info ) );
     memset( client, 0, sizeof( client_info ) );
     client->buffer = malloc( BUFFER_SIZE );
@@ -50,22 +50,26 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
     client->buffer_data_size = 0;
     client->smtp_state = SMTP_SERVER_ST_READY;
 
+    // and add client to clients[]
     my_server.clients[ client_fd ] = client;
 
     printf( "New client current smtp state: %d\n", my_server.clients[ client_fd ]->smtp_state );
     return nextState;
 }
 
-int HANDLE_CMND_HELO( int client_fd, te_smtp_server_state nextState )
+int HANDLE_CMND_HELO( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState )
 {
     printf( "Handling command HELO...\n" );
-    client_info* client = my_server.clients[ client_fd ];
+    // client_info* client = my_server.clients[ client_fd ];
 
     // TODO: add DNS checking
 
     /* compare command data address and real client ip address */
 
-    char* host = find_domain( client->buffer );
+    char* host = NULL;
+    if ( matchdatalen == 1 ) {
+        host = ( *matchdata )[ matchdatalen - 1 ];
+    }
     printf( "Debug: Host: %s\n", host );
 
     char* host_ip = get_socket_ip_address( client_fd );
@@ -78,71 +82,83 @@ int HANDLE_CMND_HELO( int client_fd, te_smtp_server_state nextState )
         printf( "Client's (%d) address is not verified!\r\n", client_fd );
     }
 
-    send_message_to_client( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd, RE_RESP_OK );
 
     printf( "Handling command HELO finished.\n" );
     return nextState;
 }
 
-int HANDLE_CMND_EHLO( int client_fd, te_smtp_server_state nextState )
+int HANDLE_CMND_EHLO( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState )
 {
     printf( "Handle command EHLO.\n" );
-    send_message_to_client( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }
 
-int HANDLE_CMND_MAIL( int client_fd, te_smtp_server_state nextState )
+int HANDLE_CMND_MAIL( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState )
 {
-    printf( "Handle command MAIL.\n" );
-    send_message_to_client( client_fd, RE_RESP_OK );
+    printf( "Handling command MAIL...\n" );
+    //client_info* client = my_server.clients[ client_fd ];
+
+    char* email_address = NULL;
+    if ( matchdatalen == 1 && ( strcmp(( *matchdata )[ matchdatalen - 1 ], "") != 0 ) ) {
+        email_address = ( *matchdata )[ matchdatalen - 1 ];
+        printf( "Debug: Mail to email address: %s.\n", email_address );
+    } else {
+        printf("Debug: Mail to without email address.\n");
+    }
+
+    send_response_to_client( client_fd, RE_RESP_OK );
+
+    printf( "Handling command MAIL finished.\n" );
     return nextState;
 }
 
-int HANDLE_CMND_RCPT( int client_fd, te_smtp_server_state nextState )
+int HANDLE_CMND_RCPT( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState )
 {
     printf( "Handle command RCPT.\n" );
-    send_message_to_client( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }
 
 int HANDLE_CMND_DATA( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle command DATA.\n" );
-    send_message_to_client( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }
 
 int HANDLE_MAIL_DATA( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle mail data.\n" );
-    send_message_to_client( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }
 
 int HANDLE_MAIL_SAVED( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle mail saved.\n" );
-    send_message_to_client( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }
 
 int HANDLE_MAIL_END( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle mail end.\n" );
-    send_message_to_client( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }
 
 int HANDLE_CMND_RSET( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle command RSET.\n" );
-    send_message_to_client( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }
 
 int HANDLE_CLOSE( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle close.\n" );
-    send_message_to_client( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }

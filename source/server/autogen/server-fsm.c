@@ -305,7 +305,9 @@ te_smtp_server_state
 smtp_server_step(
     te_smtp_server_state smtp_server_state,
     te_smtp_server_event trans_evt,
-    int client_socket_fd )
+    int client_socket_fd,
+    char*** matchdata,
+    int matchdatalen )
 {
     te_smtp_server_state nxtSt;
     te_smtp_server_trans trans;
@@ -352,28 +354,28 @@ smtp_server_step(
 
     case SMTP_SERVER_TR_CMND_EHLO:
         /* START == CMND_EHLO == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CMND_EHLO(client_socket_fd, nxtSt);
+        nxtSt = HANDLE_CMND_EHLO(client_socket_fd, matchdata, matchdatalen, nxtSt);
         /* END   == CMND_EHLO == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_CMND_HELO:
         /* START == CMND_HELO == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CMND_HELO(client_socket_fd, nxtSt);
+        nxtSt = HANDLE_CMND_HELO(client_socket_fd, matchdata, matchdatalen, nxtSt);
         /* END   == CMND_HELO == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_CMND_MAIL:
         /* START == CMND_MAIL == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CMND_MAIL(client_socket_fd, nxtSt);
+        nxtSt = HANDLE_CMND_MAIL(client_socket_fd, matchdata, matchdatalen, nxtSt);
         /* END   == CMND_MAIL == DO NOT CHANGE THIS COMMENT */
         break;
 
 
     case SMTP_SERVER_TR_CMND_RCPT:
         /* START == CMND_RCPT == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_CMND_RCPT(client_socket_fd, nxtSt);
+        nxtSt = HANDLE_CMND_RCPT(client_socket_fd, matchdata, matchdatalen, nxtSt);
         /* END   == CMND_RCPT == DO NOT CHANGE THIS COMMENT */
         break;
 

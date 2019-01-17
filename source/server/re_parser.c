@@ -127,6 +127,8 @@ smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int*
             PCRE2_INFO_NAMECOUNT, /* get the number of named substrings */
             &namecount );          /* where to put the answer */
 
+    printf( "Debug: match namecount: %d\n", namecount );
+
     if ( namecount <= 0 ) {
         return ci;
     }
@@ -138,6 +140,9 @@ smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int*
 
     /* Before we can access the substrings, we must extract the table for
     translating names to numbers, and the size of each entry in the table. */
+
+
+    printf( "Debug: match proccess substrings..\n" );
 
     PCRE2_SPTR name_table;
     ( void )pcre2_pattern_info(
@@ -159,9 +164,10 @@ smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int*
         int n = ( tabptr[0] << 8 ) | tabptr[ 1 ];
 
         int sz = ( int )( ovector[ 2 * n + 1 ] - ovector[ 2 * n ] );
-        ( *matchdata )[ n ] = calloc( sz + 1, sizeof( char ) );
-        memcpy( ( *matchdata )[ n ], ( char* )( subject + ovector[ 2 * n ] ), sz * sizeof( char ) );
+        ( *matchdata )[ i ] = calloc( sz + 1, sizeof( char ) );
+        memcpy( ( *matchdata )[ i ], ( char* )( subject + ovector[ 2 * n ] ), sz * sizeof( char ) );
 
+        printf(" Debug: match data i %d: %s\n", i,  ( *matchdata )[ i ] );
         printf("  (%d) %*s: %.*s\n", n, name_entry_size - 3, tabptr + 2, ( int )( ovector[ 2 * n + 1]
         - ovector[ 2 * n ] ), subject + ovector[ 2 * n ] );
 
