@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <arpa/inet.h>
 
-#include "my_socket.h"
+#include "network.h"
 #include "error_fail.h"
 
 int create_socket_on_port( int port ) 
@@ -56,4 +56,17 @@ char* get_socket_ip_address( int socket_fd ) {
     char* host_ip = inet_ntoa( peer.sin_addr );
 
     return host_ip;
+}
+
+int set_socket_as_nonblocking( int socket_fd ) {
+    int flags = fcntl( socket_fd, F_GETFL, 0 );
+    if ( flags < 0 ) {
+        return 1;
+    }
+
+    if ( fcntl( socket_fd, F_SETFL, flags | O_NONBLOCK ) ) {
+        return 1;
+    }
+
+    return 0;
 }
