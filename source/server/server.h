@@ -6,6 +6,7 @@
 #include "network.h"
 #include "linked_list.h"
 #include "client_info.h"
+#include "logger.h"
 
 int server_initialize();
 void server_update_fd_sets();
@@ -27,6 +28,8 @@ struct server {
 	fd_set* read_fds_set;
 	fd_set* write_fds_set;
 	fd_set* exceptions_fds_set;
+
+	logger_t logger;
 
 	int max_fd;
 };

@@ -3,4 +3,8 @@
 #define CLIENTS_REALLOC_STEP 100
 #define MAX_RCPT_CLIENTS 10
 #define PATH_TO_MAILDIR_FROM_BUILD "/Users/anastasia/maildir/"
+#define LOGGER_QUEUE_NAME "logger_queue"
+#define LOGGER_QUEUE_CAPACITY 1024
+#define LOGGER_MSG_CAPACITY 256
+#define LOGGER_STOP_MSG "exit"
 #define SERVER_DOMAIN_NAME "pai.ru"

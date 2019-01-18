@@ -13,6 +13,7 @@
 #include "helpers.h"
 #include "network.h"
 #include "maildir.h"
+#include "logger.h"
 
 extern struct server my_server;
 
@@ -21,10 +22,9 @@ int send_response_to_client(int client_fd, const char *response)
     printf( "Trying to send message to client with fd %d...\n", client_fd );
     ssize_t actual_sent = send( client_fd, response, strlen( response ), 0 );
 
-    // TODO: проверить, что он реально неблокирующий
     if ( actual_sent < 0 && errno == EWOULDBLOCK ) {
             printf( "Error while sending message (EWouldblock), continue..\n" );
-            return 1;
+            return 1; // TODO: add handling this return code!
     }
 
     printf( "Actual sent size: %zd\n", actual_sent );
@@ -69,6 +69,8 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
 
     // and add client to clients[]
     my_server.clients[ client_fd ] = client;
+
+    logger_log_msg( &my_server.logger, "New client accepted." );
 
     send_response_to_client( client_fd, RE_RESP_READY );
 
