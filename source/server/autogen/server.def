@@ -47,8 +47,5 @@ transition =
 
 transition =
 { tst  = waiting_for_data;  tev = mail_data;            next = waiting_for_data;    ttype = mail_data; },
-{ tst  = waiting_for_data;  tev = mail_end;             next = saving_mail;         ttype = mail_end; },
+{ tst  = waiting_for_data;  tev = mail_end;             next = need_sender;         ttype = mail_end; },
 { tst  = waiting_for_data;  tev = conn_lost;            next = closed;              ttype = close; };
-
-transition =
-{ tst  = saving_mail;       tev = mail_saved;           next = need_sender;         ttype = mail_saved; };

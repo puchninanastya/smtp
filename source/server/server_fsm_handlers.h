@@ -16,7 +16,6 @@ int HANDLE_CMND_RCPT( int client_fd, char*** matchdata, int matchdatalen, te_smt
 int HANDLE_CMND_DATA( int client_fd, te_smtp_server_state nextState );
 int HANDLE_MAIL_DATA( int client_fd, te_smtp_server_state nextState );
 int HANDLE_MAIL_END( int client_fd, te_smtp_server_state nextState );
-int HANDLE_MAIL_SAVED( int client_fd, te_smtp_server_state nextState );
 int HANDLE_CMND_RSET( int client_fd, te_smtp_server_state nextState );
 int HANDLE_CLOSE( int client_fd, te_smtp_server_state nextState );
 
