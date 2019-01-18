@@ -41,11 +41,15 @@ typedef struct {
     int msg_queue_id;
 } logger_t;
 
-int logger_fork_and_initialize();
+int logger_fork_and_initialize( logger_t* logger_sender );
 int logger_log_msg( logger_t* logger, log_msg_type_t msg_type , char* msg );
+void logger_destroy( logger_t* logger );
 
 int logger_initialize( logger_t* logger );
 void logger_run_loop( logger_t* logger );
-void logger_destroy( logger_t* logger );
+int logger_open_file( logger_t* logger );
+
+char* logger_get_log_time();
+char* logger_get_log_type( log_msg_type_t type );
 
 #endif //SMTP_MTA_LOGGER_H

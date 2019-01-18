@@ -30,7 +30,7 @@ int server_initialize()
     if ( re_initialize() == 0 ) {
         fail_on_error( "Can not initialize regular expressions for parser!" );
     }
-    if ( logger_fork_and_initialize() < 0 ) {
+    if ( logger_fork_and_initialize( &my_server.logger ) < 0 ) {
         fail_on_error( "Can not initialize logger!" );
     }
     printf( "Server successfully initialized.\n" );

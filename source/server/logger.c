@@ -8,9 +8,7 @@
 #include "helpers.h"
 #include "server.h"
 
-extern struct server my_server;
-
-int logger_fork_and_initialize()
+int logger_fork_and_initialize( logger_t* logger_sender )
 {
     printf( "Logger: fork and init.\n" );
     pid_t pid;
@@ -33,7 +31,7 @@ int logger_fork_and_initialize()
             kill( getpid(), SIGTERM );
 
         default: // server
-            logger_initialize( &( my_server.logger ) );
+            logger_initialize( logger_sender );
             break;
     }
     return pid;
@@ -42,14 +40,9 @@ int logger_fork_and_initialize()
 int logger_initialize( logger_t* logger )
 {
     printf( "Logger: initializing...\n" );
+
     /* create Sys MQ for log messages */
-
-    logger->msg_queue_key = 5;
-
-    // TODO: fix. ftok don't work and returns < 0 =(
-    //if ( ( logger->msg_queue_key = ftok( LOGGER_QUEUE_NAME, 1 ) ) < 0 ) {
-    //    fail_on_error( "logger_initialize(): ftok()" );
-    //}
+    logger->msg_queue_key = LOGGER_QUEUE_KEY;
 
     if ( ( logger->msg_queue_id = msgget( logger->msg_queue_key, 0666 | IPC_CREAT) ) < 0) {
         fail_on_error("logger_initialize(): msgget()");
@@ -63,8 +56,10 @@ int logger_initialize( logger_t* logger )
 
 void logger_destroy( logger_t* logger )
 {
+    printf( "Finalizing logger...\n" );
     // destroy the message queue
     msgctl( logger->msg_queue_id, IPC_RMID, NULL);
+    printf( "Logger finalized.\n" );
 }
 
 void logger_run_loop( logger_t* logger )
