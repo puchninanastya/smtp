@@ -12,6 +12,7 @@
 #include "error_fail.h"
 #include "helpers.h"
 #include "network.h"
+#include "maildir.h"
 
 extern struct server my_server;
 
@@ -153,6 +154,8 @@ int HANDLE_CMND_MAIL( int client_fd, char*** matchdata, int matchdatalen, te_smt
 
     // adding sender address to client's mail
     client->mail = malloc(sizeof( mail ) );
+    memset( client->mail, 0, sizeof( mail ) );
+    client->mail->recepients = NULL;
     client->mail->sender = email_address;
 
     send_response_to_client( client_fd, RE_RESP_OK );
@@ -174,12 +177,17 @@ int HANDLE_CMND_RCPT( int client_fd, char*** matchdata, int matchdatalen, te_smt
         printf( "Debug: 'Rcpt to' without email address.\n" );
     }
 
-    if ( client->mail->recepients_num++ > MAX_RCPT_CLIENTS ) {
+    if ( client->mail->recepients_num + 1 > MAX_RCPT_CLIENTS ) {
         printf( "Client's mail already has max number of recepients! Can't add one more.\r\n" );
         send_response_to_client(client_fd, RE_RESP_OK);
     } else {
-        client->mail->recepients = malloc( sizeof( char* ) * MAX_RCPT_CLIENTS ); // TODO: change allocation (add realloc)
+        if ( client->mail->recepients == NULL ) {
+            // allocation if adding first recepient
+            client->mail->recepients = malloc(
+                    sizeof(char *) * MAX_RCPT_CLIENTS); // TODO: change allocation (add realloc)
+        }
         client->mail->recepients[ client->mail->recepients_num ] = email_address;
+
         client->mail->recepients_num++;
         send_response_to_client(client_fd, RE_RESP_OK);
     }
@@ -222,17 +230,14 @@ int HANDLE_MAIL_END( int client_fd, te_smtp_server_state nextState )
     printf( "Handling end of mail data...\n" );
     client_info* client = my_server.clients[ client_fd ];
 
-    send_response_to_client( client_fd, RE_RESP_OK );
     printf( "Full client's mail data looks like: \n %s\n", client->mail->data );
+    send_response_to_client( client_fd, RE_RESP_OK );
+    save_mail_to_maildir( client->mail );
+
+    // smtp_server_step( client->smtp_state, SMTP_SERVER_EV_MAIL_SAVED, client_fd, NULL, 0 );
+    // TODO: add "not saved" event and handler to send mail back to client or delete it if no sender in mail
 
     printf( "Handling end of mail data finished.\n" );
-    return nextState;
-}
-
-int HANDLE_MAIL_SAVED( int client_fd, te_smtp_server_state nextState )
-{
-    printf( "Handle mail saved.\n" );
-    send_response_to_client( client_fd, RE_RESP_OK );
     return nextState;
 }
 
@@ -253,7 +258,8 @@ int HANDLE_CLOSE( int client_fd, te_smtp_server_state nextState )
     return nextState;
 }
 
-int HANDLE_ERROR( int client_fd, te_smtp_server_state nextState ) {
+int HANDLE_ERROR( int client_fd, te_smtp_server_state nextState )
+{
     printf( "Handling error...\n" );
     send_response_to_client( client_fd, RE_RESP_ERR_BAD_SEQ );
     printf( "Handling error finished.\n" );
