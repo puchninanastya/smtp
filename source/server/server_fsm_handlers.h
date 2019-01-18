@@ -20,4 +20,6 @@ int HANDLE_MAIL_SAVED( int client_fd, te_smtp_server_state nextState );
 int HANDLE_CMND_RSET( int client_fd, te_smtp_server_state nextState );
 int HANDLE_CLOSE( int client_fd, te_smtp_server_state nextState );
 
+int HANDLE_ERROR( int client_fd, te_smtp_server_state nextState );
+
 #endif //SMTP_MTA_SERVER_FSM_HANDLERS_H

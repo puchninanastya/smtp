@@ -396,7 +396,9 @@ smtp_server_step(
 
     case SMTP_SERVER_TR_INVALID:
         /* START == INVALID == DO NOT CHANGE THIS COMMENT */
-        exit(smtp_server_invalid_transition(smtp_server_state, trans_evt));
+        printf( "Transition is invalid" );
+        nxtSt = HANDLE_ERROR(client_socket_fd, nxtSt);
+        //exit(smtp_server_invalid_transition(smtp_server_state, trans_evt));
         /* END   == INVALID == DO NOT CHANGE THIS COMMENT */
         break;
 

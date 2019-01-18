@@ -247,7 +247,15 @@ int HANDLE_CMND_RSET( int client_fd, te_smtp_server_state nextState )
 
 int HANDLE_CLOSE( int client_fd, te_smtp_server_state nextState )
 {
-    printf( "Handle close.\n" );
+    printf( "Handling close...\n" );
     send_response_to_client( client_fd, RE_RESP_CLOSE );
+    printf( "Handling close finished.\n" );
+    return nextState;
+}
+
+int HANDLE_ERROR( int client_fd, te_smtp_server_state nextState ) {
+    printf( "Handling error...\n" );
+    send_response_to_client( client_fd, RE_RESP_ERR_BAD_SEQ );
+    printf( "Handling error finished.\n" );
     return nextState;
 }

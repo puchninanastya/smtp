@@ -168,8 +168,18 @@ int handle_client_read(int client_fd)
         for( int i = 0; i < matchdatalen; i++ ) {
             printf( "Re match data num %d: %s\n", i, matchdata[ i ] );
         }
-        te_smtp_server_state next_st = smtp_server_step( client->smtp_state,
-                ( te_smtp_server_event ) cmnd, client_fd, &matchdata, matchdatalen );
+
+        te_smtp_server_state next_st;
+        if ( cmnd == SMTP_RE_MAIL_DATA &&
+            client->smtp_state != SMTP_SERVER_ST_WAITING_FOR_DATA ) {
+            printf( "Reg exp returned command is invalid.\n" );
+            smtp_server_step( client->smtp_state,
+                    SMTP_SERVER_EV_INVALID, client_fd, &matchdata, matchdatalen );
+            next_st = client->smtp_state;
+        } else {
+            next_st = smtp_server_step(client->smtp_state,
+                                       (te_smtp_server_event) cmnd, client_fd, &matchdata, matchdatalen);
+        }
         client->smtp_state = next_st;
         printf( "New current state for client %d is %d.\n", client_fd, client->smtp_state );
     }
