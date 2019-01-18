@@ -9,6 +9,7 @@ STD = -std=gnu99
 UTILS_DIR = ./utils
 DOT_DIR = ./dot
 TEX_DIR = ./tex
+IMG_DIR = ./images
 PYTHON2_ENV_DIR = ./report_env
 
 # Utilities
@@ -26,12 +27,19 @@ clean:
 	rm -rf report.pdf $(TEX_DIR)/serverfsm_dot.tex $(DOT_DIR)/serverfsm_def.dot
 
 
-# DOT FILES GENERATION:
+# GENERATE FSM IMAGES
 
 # .def -> _def.dot
 ./dot/serverfsm_def.dot: ./../source/server/autogen/server.def
 	$(FSM2DOT) $< > $@
 
+./dot/serverfsm_report_def.dot: ./../source/server/autogen/server_report.def
+	$(FSM2DOT) $< > $@
+
+.PHONY: generate_fsm_images
+generate_fsm_images:
+	 dot -Tpng $(DOT_DIR)/serverfsm_def.dot > $(IMG_DIR)/serverfsm.png; \
+	 dot -Tpng $(DOT_DIR)/serverfsm_report_def.dot > $(IMG_DIR)/serverfsm_report.png
 
 # TEX FILES GENERATION:
 
