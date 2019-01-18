@@ -7,7 +7,12 @@ struct mail {
     char** recepients;
     int recepients_num;
     char* data;
-    int data_length;
+    int data_capacity;
 };
+
+void free_mail( mail* mail );
+void append_data_to_mail( mail* mail, char* new_data, int new_data_len );
+
+char* realloc_mail_data_for_length( mail* mail, int len );
 
 #endif //SMTP_MTA_MAIL_H

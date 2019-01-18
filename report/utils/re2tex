@@ -10,7 +10,7 @@ to_delete = ('(', ')')
 before = '\\texttt{'
 after = '}'
 
-tex_ext = '_re.tex'
+tex_ext = '.tex'
 re_def = re.compile('\s*#define\s+(RE\w*)\s+"(.*?)"\s*')
 
 def re_tex(re_c):

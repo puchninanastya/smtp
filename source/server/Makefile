@@ -28,7 +28,7 @@ LDFLAGS += $(shell autoopts-config ldflags) -lpcre2-8
 
 # TARGETS:
 
-all: clean build_dir compile_all smtp_server test_client
+all: clean build_dir logs_dir compile_all smtp_server test_client
 
 smtp_server:
 	$(CC) $(STD) $(LDFLAGS) -o ./$(BUILD_DIR)/$(PROG_NAME) \
@@ -48,6 +48,10 @@ clean:
 build_dir:
 	mkdir -p $(BUILD_DIR)
 
+.PHONY: logs_dir
+logs_dir:
+	mkdir -p $(BUILD_DIR)/logs
+
 .PHONY: move_objs
 move_objs:
 	mv *.o $(BUILD_DIR)
@@ -62,7 +66,8 @@ compile_all: server-objs server-fsm.o serveropts.o move_objs
 server-objs:
 	$(CC) $(STD) -c $(RFLAGS) -I$prefix/include \
     $(COMMON_SOURCE_DIR)/*.c \
-    server.c my_socket.c main.c server_fsm_handlers.c re_parser.c
+    server.c network.c main.c server_fsm_handlers.c re_parser.c helpers.c \
+    mail.c client_info.c maildir.c logger.c
 
 # Compiling Options with Autogen
 serveropts.o: $(AUTOGEN_DIR)/serveropts.c

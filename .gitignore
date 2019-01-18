@@ -3,3 +3,10 @@
 *.DS_Store
 
 source/server/build
+report/report_env
+
+# temp report files:
+*.toc
+*.aux
+*.log
+*.out

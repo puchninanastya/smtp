@@ -6,15 +6,17 @@
 
 // Regular Expressions patterns for SMTP commands from smtp_re_commands
 const char* smtp_re_patterns[ SMTP_RE_CMNDS_COUNTER ] = {
-        "^NOOP\\r\\n",
-        "^HELO:\\s*<.+>",
-        "^EHLO:\\s*<.+>\\r\\n",
-        "^MAIL FROM:\\s*<.+>\\r\\n",
-        "^RCPT TO:\\s*<(.+@.+)>\\r\\n",
-        "^VRFY:\\s*<.+>\\r\\n",
-        "^DATA\\r\\n",
-        "^RSET\\r\\n",
-        "^QUIT\\r\\n"
+        RE_CMND_NOOP,
+        RE_CMND_HELO,
+        RE_CMND_EHLO,
+        RE_CMND_MAIL,
+        RE_CMND_RCPT,
+        RE_CMND_VRFY,
+        RE_CMND_DATA,
+        RE_CMND_RSET,
+        RE_CMND_QUIT,
+        RE_MAIL_END,
+        RE_MAIL_DATA
 };
 
 // Regular expressions compiled with PCRE2
@@ -25,7 +27,7 @@ int re_initialize() {
     int code = 0;
 
     for ( int re_name = 0; re_name < SMTP_RE_CMNDS_COUNTER; re_name++ ) {
-        code |= re_compile(re_name);
+        code |= re_compile( re_name );
         printf( "Debug: Re compiled reg exp %d with result code %d.\n", re_name, code );
     }
 
@@ -56,10 +58,10 @@ int re_compile( smtp_re_commands re_pattern_name )
             NULL );                 /* use default compile context */
 
     if ( !smtp_re_compiled[ re_pattern_name ] ) {
-        PCRE2_UCHAR buffer[256];
-        pcre2_get_error_message(errornumber, buffer, sizeof(buffer));
-        printf("PCRE2 compilation failed at offset %d: %s\n", (int)erroroffset,
-               buffer);
+        PCRE2_UCHAR buffer[ 256 ];
+        pcre2_get_error_message (errornumber, buffer, sizeof( buffer ) );
+        printf( "PCRE2 compilation failed at offset %d: %s\n", ( int )erroroffset,
+               buffer );
         return 1;
     }
 
@@ -69,7 +71,7 @@ int re_compile( smtp_re_commands re_pattern_name )
 smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int* matchdatalen )
 {
     PCRE2_SPTR subject = ( PCRE2_SPTR )text;
-    size_t subject_length = strlen((  char *) subject );
+    size_t subject_length = strlen( (  char *) subject );
 
     int ci;
     int rc;
@@ -125,6 +127,8 @@ smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int*
             PCRE2_INFO_NAMECOUNT, /* get the number of named substrings */
             &namecount );          /* where to put the answer */
 
+    printf( "Debug: match namecount: %d\n", namecount );
+
     if ( namecount <= 0 ) {
         return ci;
     }
@@ -136,6 +140,9 @@ smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int*
 
     /* Before we can access the substrings, we must extract the table for
     translating names to numbers, and the size of each entry in the table. */
+
+
+    printf( "Debug: match proccess substrings..\n" );
 
     PCRE2_SPTR name_table;
     ( void )pcre2_pattern_info(
@@ -157,10 +164,10 @@ smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int*
         int n = ( tabptr[0] << 8 ) | tabptr[ 1 ];
 
         int sz = ( int )( ovector[ 2 * n + 1 ] - ovector[ 2 * n ] );
-        ( *matchdata )[ n ] = calloc( sz + 1, sizeof( char ) );
-        memcpy( ( *matchdata )[ n ], ( char* )( subject + ovector[ 2 * n ] ), sz * sizeof( char ) );
+        ( *matchdata )[ i ] = calloc( sz + 1, sizeof( char ) );
+        memcpy( ( *matchdata )[ i ], ( char* )( subject + ovector[ 2 * n ] ), sz * sizeof( char ) );
 
-        //LOG("  %s\n", (*matchdata)[n]);
+        printf(" Debug: match data i %d: %s\n", i,  ( *matchdata )[ i ] );
         printf("  (%d) %*s: %.*s\n", n, name_entry_size - 3, tabptr + 2, ( int )( ovector[ 2 * n + 1]
         - ovector[ 2 * n ] ), subject + ovector[ 2 * n ] );
 

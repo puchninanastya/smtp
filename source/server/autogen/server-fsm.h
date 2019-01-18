@@ -74,9 +74,9 @@ typedef enum {
     SMTP_SERVER_EV_CMND_EHLO,     SMTP_SERVER_EV_CMND_MAIL,
     SMTP_SERVER_EV_CMND_RCPT,     SMTP_SERVER_EV_CMND_VRFY,
     SMTP_SERVER_EV_CMND_DATA,     SMTP_SERVER_EV_CMND_RSET,
-    SMTP_SERVER_EV_CMND_QUIT,     SMTP_SERVER_EV_CONN_ACCEPTED,
-    SMTP_SERVER_EV_CONN_LOST,     SMTP_SERVER_EV_MAIL_DATA,
-    SMTP_SERVER_EV_MAIL_END,      SMTP_SERVER_EV_MAIL_SAVED,
+    SMTP_SERVER_EV_CMND_QUIT,     SMTP_SERVER_EV_MAIL_END,
+    SMTP_SERVER_EV_MAIL_DATA,     SMTP_SERVER_EV_MAIL_SAVED,
+    SMTP_SERVER_EV_CONN_ACCEPTED, SMTP_SERVER_EV_CONN_LOST,
     SMTP_SERVER_EV_INVALID
 } te_smtp_server_event;
 
@@ -89,7 +89,9 @@ extern te_smtp_server_state
 smtp_server_step(
     te_smtp_server_state smtp_server_state,
     te_smtp_server_event trans_evt,
-    int client_socket_fd );
+    int client_socket_fd,
+    char*** matchdata,
+    int matchdatalen );
 
 #endif /* AUTOFSM_SERVER_FSM_H_GUARD */
 /*

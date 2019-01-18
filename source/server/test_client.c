@@ -22,7 +22,7 @@ int main( int argc, char **argv )
     struct sockaddr_in server_address; 
     memset( &server_address, '0', sizeof( server_address ) ); 
     server_address.sin_family = AF_INET; 
-    server_address.sin_port = htons(SERVER_PORT); 
+    server_address.sin_port = htons( SERVER_PORT );
     if( inet_pton( AF_INET, "127.0.0.1", &server_address.sin_addr ) <= 0 )  { 
         fail_on_error( "Can not convert server ip address" ); 
     } 
@@ -45,11 +45,11 @@ int main( int argc, char **argv )
 
 
     printf( "Sleeping...\n" );
-    sleep(3);
+    sleep( 3 );
     printf( "Woke up.\n" );
 
     printf( "Trying to read data from server...\n" );
-    char buffer[BUFFER_SIZE];
+    char buffer[ BUFFER_SIZE ] ;
     memset( buffer, 0, BUFFER_SIZE * sizeof( char ) );
     ssize_t actual_read = read( client_socket_fd, buffer, sizeof( buffer ) );
     if ( actual_read < 0 ) {

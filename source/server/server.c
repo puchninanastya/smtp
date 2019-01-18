@@ -7,7 +7,7 @@
 #include <sys/select.h>
 
 #include "server.h"
-#include "my_socket.h"
+#include "network.h"
 #include "re_parser.h"
 #include "config.h"
 #include "error_fail.h"
@@ -24,11 +24,14 @@ int server_initialize()
     my_server.clients = NULL;
     my_server.clients_size = 0;
     my_server.client_sockets_fds = NULL;
-    my_server.read_fds_set  = ( fd_set* ) malloc( sizeof ( fd_set) );
+    my_server.read_fds_set  = ( fd_set* ) malloc( sizeof ( fd_set ) );
     my_server.write_fds_set = ( fd_set* ) malloc( sizeof ( fd_set ) );
     my_server.exceptions_fds_set = ( fd_set* ) malloc( sizeof ( fd_set ) );
     if ( re_initialize() == 0 ) {
         fail_on_error( "Can not initialize regular expressions for parser!" );
+    }
+    if ( logger_fork_and_initialize( &my_server.logger ) < 0 ) {
+        fail_on_error( "Can not initialize logger!" );
     }
     printf( "Server successfully initialized.\n" );
     return 0;   
@@ -37,6 +40,8 @@ int server_initialize()
 void server_update_fd_sets()
 {
     printf( "Updating fd sets for select...\n" );
+
+    /* Reading server's fd set */
 
     /* Adding server socket */
     FD_ZERO( my_server.read_fds_set );
@@ -54,15 +59,16 @@ void server_update_fd_sets()
         }
         current_client = current_client->next;
     }
-    printf( "Adding client to fd set completed.\n" );
 
+    /* Writing server's fd set */
     FD_ZERO( my_server.write_fds_set );
 
+
+    /* Expections server's fd sets */
     FD_ZERO( my_server.exceptions_fds_set );
     FD_SET( my_server.server_socket_fd, my_server.exceptions_fds_set );
 
-    printf("Fd sets successfully updated.\n");
-    return;   
+    printf( "Fd sets successfully updated.\n" );
 }
 
 int server_run() 
@@ -73,14 +79,14 @@ int server_run()
         server_update_fd_sets();
 
         printf( "Waiting for pselect activity...\n" );
-        int activity = pselect( my_server.max_fd + 1, my_server.read_fds_set, my_server.write_fds_set,
-                            my_server.exceptions_fds_set, NULL, NULL );
+        int activity = pselect( my_server.max_fd + 1, my_server.read_fds_set,
+                my_server.write_fds_set, my_server.exceptions_fds_set, NULL, NULL );
         
         printf( "Pselect woke up with activity: %d\n", activity );
 
         switch ( activity ) {
         case -1: 
-            fail_on_error( "Select returns -1." );
+            fail_on_error( "Select returns -1." ); // NOTE: remove this for IDE debug
             break;
         case 0:
             fail_on_error( "Select returns 0." );
@@ -104,7 +110,7 @@ int server_run()
                 if ( FD_ISSET( current_client->data, my_server.read_fds_set ) ) {
                     handle_client_read( current_client->data );
                 } else if ( FD_ISSET( current_client->data, my_server.write_fds_set ) ) {
-                    printf( "ATTENTION! No handler for send message!!!\n" );
+                    printf( "ATTENTION! No handler for send message!!!\n" ); // TODO: add handler
                     //handle_send_message( current_client->data );
                 } else if ( FD_ISSET( current_client->data, my_server.exceptions_fds_set ) ) {
                     printf( "Exception in client with fd %i.\n", current_client->data );
@@ -129,8 +135,9 @@ void handle_new_connection()
         fail_on_error( "Can not accept client!" );
     }
     smtp_server_step( SMTP_SERVER_ST_INIT, SMTP_SERVER_EV_CONN_ACCEPTED,
-                      client_socket_fd );
-    my_server.client_sockets_fds = linked_list_add_node( my_server.client_sockets_fds, client_socket_fd );
+                      client_socket_fd, NULL, 0 );
+    my_server.client_sockets_fds = linked_list_add_node( my_server.client_sockets_fds,
+            client_socket_fd );
     printf( "Client accepted and client socket added to clients array.\n" );
 }
 
@@ -150,7 +157,9 @@ int handle_client_read(int client_fd)
     } else if ( actual_received == 0 ) {
         close_client_connection( client_fd );
     } else {
-        printf( "Message \"%s\" received from client, message lenght: %zd.\n", buffer, actual_received );
+        printf( "Message \"%s\" received from client, message lenght: %zd.\n",
+                buffer, actual_received );
+        memset( client->buffer, 0, BUFFER_SIZE );
         memcpy( client->buffer, buffer, actual_received );
 
         // parse for command and send response
@@ -158,26 +167,26 @@ int handle_client_read(int client_fd)
         int matchdatalen = 0;
         smtp_re_commands cmnd = re_match_for_command( client->buffer, &matchdata, &matchdatalen );
         printf( "Re match for command result cmnd: %d\n", cmnd );
-        te_smtp_server_state next_st = smtp_server_step( client->smtp_state,
-                ( te_smtp_server_event ) cmnd, client_fd );
+        printf( "Re match data len: %d\n", matchdatalen );
+        for( int i = 0; i < matchdatalen; i++ ) {
+            printf( "Re match data num %d: %s\n", i, matchdata[ i ] );
+        }
+
+        te_smtp_server_state next_st;
+        if ( cmnd == SMTP_RE_MAIL_DATA &&
+            client->smtp_state != SMTP_SERVER_ST_WAITING_FOR_DATA ) {
+            printf( "Reg exp returned command is invalid.\n" );
+            smtp_server_step( client->smtp_state,
+                    SMTP_SERVER_EV_INVALID, client_fd, &matchdata, matchdatalen );
+            next_st = client->smtp_state;
+        } else {
+            next_st = smtp_server_step(client->smtp_state,
+                                       (te_smtp_server_event) cmnd, client_fd, &matchdata, matchdatalen);
+        }
         client->smtp_state = next_st;
         printf( "New current state for client %d is %d.\n", client_fd, client->smtp_state );
-
-        send_message_to_client( client_fd );
     }
 
-    return 0;
-}
-
-int send_message_to_client( int client_fd )
-{
-    printf( "Trying to send message to client with fd %d...\n", client_fd );
-    const char* message_to_send = "OK!\r\n";
-    ssize_t actual_sent = send( client_fd, message_to_send, strlen(message_to_send), 0 ); 
-    if ( actual_sent < 0 ) {
-        fail_on_error( "Can not sent data to client!" );
-    }
-    printf( "Message \"%s\" sent to client.\n", message_to_send );
     return 0;
 }
 
@@ -194,5 +203,6 @@ void server_close()
 {
     close( my_server.server_socket_fd );
     re_finalize();
+    logger_destroy( &my_server.logger );
     printf( "Server is closed.\n" );
 }

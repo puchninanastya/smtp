@@ -6,8 +6,9 @@
 #include <string.h> 
 #include <stdio.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 
-#include "my_socket.h"
+#include "network.h"
 #include "error_fail.h"
 
 int create_socket_on_port( int port ) 
@@ -19,7 +20,7 @@ int create_socket_on_port( int port )
     } 
 
     struct sockaddr_in address; 
-    memset(&address, '0', sizeof(address)); 
+    memset( &address, '0', sizeof( address ) );
     address.sin_family = AF_INET; 
     address.sin_addr.s_addr = INADDR_ANY; 
     address.sin_port = htons( port ); 
@@ -41,4 +42,31 @@ int create_socket_on_port( int port )
     }
 
     return socket_fd;
+}
+
+
+char* get_socket_ip_address( int socket_fd ) {
+    struct sockaddr_in peer;
+    unsigned int peer_len = sizeof( peer );
+
+    if ( getpeername ( socket_fd, ( struct sockaddr* )( &peer ), &peer_len ) == -1) {
+        fail_on_error( "getpeername() failed" );
+    }
+
+    char* host_ip = inet_ntoa( peer.sin_addr );
+
+    return host_ip;
+}
+
+int set_socket_as_nonblocking( int socket_fd ) {
+    int flags = fcntl( socket_fd, F_GETFL, 0 );
+    if ( flags < 0 ) {
+        return 1;
+    }
+
+    if ( fcntl( socket_fd, F_SETFL, flags | O_NONBLOCK ) ) {
+        return 1;
+    }
+
+    return 0;
 }
