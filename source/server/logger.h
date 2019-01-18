@@ -13,16 +13,17 @@
 #define LOG_MSG_EXIT "exit"
 
 typedef enum {
-    LOG_MSG_TYPE_DEBUG = 0,
-    LOG_MSG_TYPE_INFO = 1,
-    LOG_MSG_TYPE_ERROR = 2,
+    LOG_MSG_TYPE_UNDEF = 0,
+    LOG_MSG_TYPE_DEBUG = 1,
+    LOG_MSG_TYPE_INFO = 2,
+    LOG_MSG_TYPE_ERROR = 3,
+    LOG_MSG_TYPE_DEFAULT = LOG_MSG_TYPE_DEBUG
 } log_msg_type_t;
 
 typedef enum {
     LOG_MSG_LVL_DEBUG = 0,
     LOG_MSG_LVL_INFO = 1,
-    LOG_MSG_LVL_ERROR = 2,
-    LOG_MSG_LVL_DEFAULT = 3
+    LOG_MSG_LVL_ERROR = 2
 } log_msg_level_t;
 
 typedef struct log_msg_buffer {
@@ -41,7 +42,7 @@ typedef struct {
 } logger_t;
 
 int logger_fork_and_initialize();
-int logger_log_msg( logger_t* logger, char* msg );
+int logger_log_msg( logger_t* logger, log_msg_type_t msg_type , char* msg );
 
 int logger_initialize( logger_t* logger );
 void logger_run_loop( logger_t* logger );

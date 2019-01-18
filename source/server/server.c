@@ -203,5 +203,6 @@ void server_close()
 {
     close( my_server.server_socket_fd );
     re_finalize();
+    logger_destroy( &my_server.logger );
     printf( "Server is closed.\n" );
 }

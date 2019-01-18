@@ -63,27 +63,22 @@ int logger_initialize( logger_t* logger )
 
 void logger_destroy( logger_t* logger )
 {
-    // to destroy the message queue
+    // destroy the message queue
     msgctl( logger->msg_queue_id, IPC_RMID, NULL);
 }
 
 void logger_run_loop( logger_t* logger )
 {
-    printf( "Logger: run loop(), queue id: %d.\n", logger->msg_queue_id );
+    /* Sys MQ data for log msg */
     log_msg_t log_msg;
-
     ssize_t log_msg_sz;
     log_msg_sz = sizeof( log_msg.msg_text );
 
-    /* Loop until exit message will be received */
+    /* Logger in loop until exit message will be received */
     while(1) {
-
-        printf( "Logger: in while loop.\n" );
 
         // msgrcv to receive message
         msgrcv( logger->msg_queue_id, &log_msg, log_msg_sz, 1, 0);
-
-        printf( "Logger: after msgrcv().\n" );
 
         // break loop if received LOG_MSG_EXIT
         if ( strcmp( log_msg.msg_text, LOG_MSG_EXIT ) == 0 ) {
@@ -92,41 +87,57 @@ void logger_run_loop( logger_t* logger )
         }
 
         // display the message
-        printf( "Log msg: %s \n", log_msg.msg_text );
+        printf( "%s \n", log_msg.msg_text );
 
         // TODO: write msg to file
     }
 }
 
-int logger_log_msg( logger_t* logger, char* msg )
+char* logger_get_log_time()
 {
-
-    printf( "Logger: log_msg(), queue id: %d.\n", logger->msg_queue_id );
-
-    ssize_t log_msg_sz;
-    log_msg_t log_msg;
-
-    /*
-    char timestring[ 50 ];
+    char* result = malloc( sizeof(char) * 50 );
     time_t now = time( 0 );
-    strftime ( timestring, 100, "%Y-%m-%d %H:%M:%S", localtime ( &now ) );
+    strftime ( result, 100, "[%Y-%m-%d %H:%M:%S]", localtime ( &now ) );
+    return result;
+}
 
-    printf( "Logger: log msg time: %s\n", timestring );*/
+char* logger_get_log_type( log_msg_type_t type )
+{
+    char* result = malloc( sizeof( char ) * 5 );
+    switch ( type ) {
+        case LOG_MSG_TYPE_DEBUG:
+            result = "DEBUG";
+            break;
+        case LOG_MSG_TYPE_INFO:
+            result = "INFO";
+            break;
+        case LOG_MSG_TYPE_ERROR:
+            result = "ERROR";
+            break;
+        default:
+            result = "UNDEF";
+            break;
+    }
+    return result;
+}
 
-    //char* lmsg = concat_strings( timestring, msg );
-    strcat( log_msg.msg_text, msg );
-    log_msg_sz = sizeof( log_msg.msg_text );
+int logger_log_msg( logger_t* logger, log_msg_type_t msg_type, char* msg)
+{
+    /* Sys MQ data for log msg */
+    log_msg_t log_msg;
     log_msg.msg_type = 1;
+    ssize_t log_msg_sz  = sizeof( log_msg.msg_text );
 
-    printf( "Logger: before msgsnd(), sent log msg (sz: %zd): %s \n",
-            log_msg_sz, log_msg.msg_text );
+    /* create full log message string */
+    char* timestring = logger_get_log_time();
+    char* typestring = logger_get_log_type( msg_type );
+    sprintf( log_msg.msg_text, "%s\t%s\t%s", timestring, typestring, msg );
 
+    /* Send log message to logger_listener */
     if ( ( msgsnd( logger->msg_queue_id, &log_msg, log_msg_sz, IPC_NOWAIT ) ) < 0 ) {
         printf("ERROR logger_log_msg(): msgsnd()\n");
         return 1;
     }
-
-    printf( "Logger: after msgsnd()\n" );
 
     return 0;
 }

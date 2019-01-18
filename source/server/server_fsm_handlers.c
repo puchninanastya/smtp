@@ -70,7 +70,7 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
     // and add client to clients[]
     my_server.clients[ client_fd ] = client;
 
-    logger_log_msg( &my_server.logger, "New client accepted." );
+    logger_log_msg( &my_server.logger, LOG_MSG_TYPE_INFO, "New client accepted." );
 
     send_response_to_client( client_fd, RE_RESP_READY );
 
