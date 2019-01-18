@@ -7,7 +7,7 @@
 #include <sys/select.h>
 
 #include "server.h"
-#include "my_socket.h"
+#include "network.h"
 #include "re_parser.h"
 #include "config.h"
 #include "error_fail.h"

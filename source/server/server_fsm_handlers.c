@@ -3,6 +3,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/socket.h>
+#include <errno.h>
 
 #include "rexprs.h"
 #include "server_fsm_handlers.h"
@@ -10,7 +11,7 @@
 #include "config.h"
 #include "error_fail.h"
 #include "helpers.h"
-#include "my_socket.h"
+#include "network.h"
 
 extern struct server my_server;
 
@@ -18,9 +19,14 @@ int send_response_to_client(int client_fd, const char *response)
 {
     printf( "Trying to send message to client with fd %d...\n", client_fd );
     ssize_t actual_sent = send( client_fd, response, strlen( response ), 0 );
-    if ( actual_sent < 0 ) {
-        fail_on_error( "Can not sent data to client!" );
+
+    // TODO: проверить, что он реально неблокирующий
+    if ( actual_sent < 0 && errno == EWOULDBLOCK ) {
+            printf( "Error while sending message (EWouldblock), continue..\n" );
+            return 1;
     }
+
+    printf( "Actual sent size: %zd\n", actual_sent );
     printf( "Message \"%s\" sent to client.\n", response );
     return 0;
 }
@@ -36,8 +42,11 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handling accepted.\n" );
 
-    // set up client's socket as nonblocking
-    fcntl( client_fd, F_SETFL, O_NONBLOCK );
+    if ( set_socket_as_nonblocking( client_fd ) ) {
+        printf("ERROR! Fail to set flag 'O_NONBLOCK' for socket.\n");
+    } else {
+        printf("Client's socket set as nonblocking.\n");
+    }
 
     // realloc array of clients
     if ( my_server.max_fd >= my_server.clients_size ) {

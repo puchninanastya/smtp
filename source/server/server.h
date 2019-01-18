@@ -3,7 +3,7 @@
 
 #include <sys/select.h>
 
-#include "my_socket.h"
+#include "network.h"
 #include "linked_list.h"
 #include "client_info.h"
 
