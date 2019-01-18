@@ -24,20 +24,21 @@ int logger_fork_and_initialize( logger_t* logger_sender )
 
             logger_t logger_listener;
 
-            logger_initialize( &logger_listener );
+            logger_init_mq( &logger_listener );
+            logger_open_file( &logger_listener );
             logger_run_loop( &logger_listener );
             logger_destroy( &logger_listener );
 
             kill( getpid(), SIGTERM );
 
         default: // server
-            logger_initialize( logger_sender );
+            logger_init_mq( logger_sender );
             break;
     }
     return pid;
 }
 
-int logger_initialize( logger_t* logger )
+int logger_init_mq( logger_t* logger )
 {
     printf( "Logger: initializing...\n" );
 
@@ -48,8 +49,6 @@ int logger_initialize( logger_t* logger )
         fail_on_error("logger_initialize(): msgget()");
     }
 
-    // TODO: open log file
-
     printf( "Logger: initialized ok.\n" );
     return 0;
 }
@@ -57,6 +56,10 @@ int logger_initialize( logger_t* logger )
 void logger_destroy( logger_t* logger )
 {
     printf( "Finalizing logger...\n" );
+    // close log file
+    if ( logger->file ) {
+        fclose( logger->file );
+    }
     // destroy the message queue
     msgctl( logger->msg_queue_id, IPC_RMID, NULL);
     printf( "Logger finalized.\n" );
@@ -64,6 +67,7 @@ void logger_destroy( logger_t* logger )
 
 void logger_run_loop( logger_t* logger )
 {
+    printf( "Running logger loop..\n" );
     /* Sys MQ data for log msg */
     log_msg_t log_msg;
     ssize_t log_msg_sz;
@@ -81,11 +85,12 @@ void logger_run_loop( logger_t* logger )
             break;
         }
 
-        // display the message
+        // display and write message to log file
         printf( "%s \n", log_msg.msg_text );
-
-        // TODO: write msg to file
+        fprintf( logger->file, "%s\r\n", log_msg.msg_text );
     }
+
+    printf( "Running logger loop finished.\n" );
 }
 
 char* logger_get_log_time()
@@ -114,6 +119,21 @@ char* logger_get_log_type( log_msg_type_t type )
             break;
     }
     return result;
+}
+
+int logger_open_file( logger_t* logger )
+{
+    printf( "Opening log file...\n");
+    logger->filename = malloc( sizeof( char ) * 100 );
+    sprintf( logger->filename, "%s/SMTP_LOG_%s", LOGGER_DIR, logger_get_log_time() );
+    printf( "Logger: filename is %s\n", logger->filename );
+    FILE* log_fd = fopen( logger->filename, "a" );
+    if ( log_fd < 0 ) {
+        fail_on_error( "Logger: can't open file!" );
+    }
+    logger->file = log_fd;
+    printf( "Opening log file finished.\n");
+    return 0;
 }
 
 int logger_log_msg( logger_t* logger, log_msg_type_t msg_type, char* msg)

@@ -28,7 +28,7 @@ LDFLAGS += $(shell autoopts-config ldflags) -lpcre2-8
 
 # TARGETS:
 
-all: clean build_dir compile_all smtp_server test_client
+all: clean build_dir logs_dir compile_all smtp_server test_client
 
 smtp_server:
 	$(CC) $(STD) $(LDFLAGS) -o ./$(BUILD_DIR)/$(PROG_NAME) \
@@ -47,6 +47,10 @@ clean:
 .PHONY: build_dir
 build_dir:
 	mkdir -p $(BUILD_DIR)
+
+.PHONY: logs_dir
+logs_dir:
+	mkdir -p $(BUILD_DIR)/logs
 
 .PHONY: move_objs
 move_objs:

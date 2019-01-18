@@ -34,7 +34,7 @@ typedef struct log_msg_buffer {
 typedef struct {
     log_msg_level_t log_level;
     /* log file */
-    const char* filename;
+    char* filename;
     FILE* file;
     /* Sys Msg Queue data for log messages */
     key_t msg_queue_key;
@@ -45,7 +45,7 @@ int logger_fork_and_initialize( logger_t* logger_sender );
 int logger_log_msg( logger_t* logger, log_msg_type_t msg_type , char* msg );
 void logger_destroy( logger_t* logger );
 
-int logger_initialize( logger_t* logger );
+int logger_init_mq( logger_t* logger );
 void logger_run_loop( logger_t* logger );
 int logger_open_file( logger_t* logger );
 
