@@ -3,8 +3,8 @@
 \input{header.tex}
 
 
-\title{Отчёт по лабораторной работе \textnumero 1}
-\author{(Ф.~И.~О)}
+\title{Отчёт по курсовому проекту }
+\author{(Пучнина Анастасия Ивановна, Козлова Юлия Алексеевна)}
 
 \begin{document}
 
@@ -15,113 +15,226 @@
 \addcontentsline{toc}{chapter}{Введение}
 \chapter*{Введение}
 
-Два предложения о содержании отчёта. Для нового абзаца в исходном тексте должна быть пустая строка.
+\section{Серверная часть SMTP агента}
 
-Это~-- шаблон отчёта (вот как оформляется длинное тире, перед котрым идёт неразрывный пробел).
+\subsection{Задание. Вариант 10}
 
+Используется вызов pselect и единственный рабочий поток. Журналирование в отдельном процессе. Нужно проверять обратную зону днс.
 
-Здесь должно быть вербальное задание.
+\subsection{Цель и задачи}
 
-А вот так оформляются списки:
+Цель:
+    Разработать \textbf{SMTP-сервер} с использованием одного потока и pselect.
+
+Задачи:
 \begin{itemize}
-\item элемент списка;
-\item последний элемент списка.
+    \item проанализировать архитектурное решение;
+    \item разработать подход для обработки входящих соединений;
+    \item разработать подход хранения входящих писем в maildir;
+    \item проанализировать \textbf{SMTP}-протокол и разработать конечный автомат обработки SMTP-сообщений;
+    \item реализовать программу для получения и сохранения писем по протоколу \textbf{SMTP}.
 \end{itemize}
 
-Нумерованный список выглядит следующим образом.
+\section{Клиентская часть SMTP агента}
+
+\subsection{Задание. Вариант 31}
+
+Используется вызов select и единственный рабочий поток (или процесс). Журналирование в отдельном процессе. Пытаться отправлять все сообщения для одного MX за одну сессию.
+
+.... % Юле сюда надо добавить свою часть
+
+\chapter{Аналитический раздел}
+
+\section*{Предметная область}
+
+\subsection*{ER-диаграмма предметной области}
+
+В результате проведенного исследования были выявлены следующие сущности предметной области:
+
 \begin{enumerate}
-\item Первый элемент.
-\item Второй элемент.
+    \item Отправитель.
+    \item Получатель.
+    \item Пользователь.
+    \item Электронное письмо.
+    \item Файл письма.
+    \item Каталог Maildir.
 \end{enumerate}
 
-% \chapter{Аналитический раздел}
+Зависимость между сущностями предметной области может быть описана ER-диаграммой (~\ref{fig:er_diagram} ). Диаграмма выполнена в соответствии с нотацией UML.
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{../images/er_diagram.png}
+    \caption{ER-диаграмма предметной области}
+    \label{fig:er_diagram}
+\end{figure}
+
+
+\section*{Достоинства и недостатки реализуемой архитектуры}
+
+\subsection*{Серверная часть SMTP агента}
+
+Согласно условию задачи, в работе сервера предлагается использовать один поток выполнения и один отдельный поток
+журналирования.
+
+Достоинства данного варианта реализации:
+\begin{itemize}
+    \item простота реализации, отсутствует необходимость реализации разделяемой памяти и взаимодействия между процессами или потоками;
+    \item отсутствие времени на переключение контекстов;
+    \item благодаря неблокирующему вводу/выводу, сервер может обслуживать множество клиентов с достаточно высокой производительностью, при условии, что обработка занимает мало времени;
+    \item логирование в отдельном процессе позволяет не блокироваться на операциях ввода/вывода при записи в файл или в терминал;
+\end{itemize}
+
+Недостатки данной архитектуры:
+\begin{itemize}
+    \item низкая производительность при длительной обработке клиентских команд;
+    \item низкая отказоустойчивость (использование одного потока является менее надежным при возникновении фатальных ошибок в приложении, чем при наличии нескольих взаимозаменяемых потоков,);
+    \item сложность масштабирования и использования всех аппаратных ресурсов системы.
+\end{itemize}
+
+Недостатки программной реализации с одним потоком выполнения и мультиплексированием можно уменьшить с  помощью
+создания нескольких (пула) потоков с неблокирующим вводом/выводом и распределения нагрузки между ними.
+
+\subsection*{Клиентская часть SMTP агента}
+
+.... % Юле сюда надо добавить свою часть
 
 \chapter{Конструкторский раздел}
 
 \section{Конечный автомат состояний сервера}
 
-Рис.~\ref{fig:fsm} нагенерил самодельный \textit{fsm2dot} из \textit{autogen} и \textit{dot2tex} на пару \textit{dot}. Никто не мешает изменить параметры типа \textit{rankdir} прямо в \textit{fsm2dot}, если он будет лучше смотреться, например, сверху-вниз.
+На рис.~\ref{fig:server_fsm} представлен сгенерированный с использованием \textit{fsm2dot} скрипта из \textit{autogen}
+файла конфигурации конечного автомата \textit{serverfsm.def} и \textit{dot}.
+
+Данный рисунок не отображает переходы между состояниями при использовании именнованных обработчиков,
+поэтому, для корректного отображения конечного автомата, был создан специальный файл конфигурации
+\textit{serverfsm_report.def} без использования в \textit{autogen} параметров \textit{ttype} в переходах автомата.
+Построенный таким образом граф состояний представлен на рис.~\ref{fig:server_fsm_report}.
 
 \begin{figure}
-\centering
-\includegraphics[width=\textwidth]{include/server_def_dot.pdf}
-\caption{Состояния сервера}
-\label{fig:fsm}
+    \centering
+    \includegraphics[width=\textwidth]{../images/serverfsm.png}
+    \caption{Построенный граф конечного автомата SMTP сервера с использованием именнованных обработчиков}
+    \label{fig:serverfsm_def}
 \end{figure}
 
-\section{Синтаксис команд протокола}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{../images/serverfsm_report.png}
+    \caption{Граф состояний конечного автомата SMTP сервера}
+    \label{fig:serverfsm_report_def}
+\end{figure}
 
+
+\section{Синтаксис команд протокола}
+Ниже приведен формат команд сообщений протокола в виде регулярных выражений:
+
+Общие регулярные выражения:
 \begin{description}
-\item[Команда выхода из сеанса]
-\input{include/re_cmd_quit_re.tex}
-\item[Команда передачи имени пользователя]
-\input{include/re_cmd_user_re.tex}
+\item[Перевод строки]
+\input{regexp/re_crlf.tex}
+\item[Пробелы]
+\input{regexp/re_space.tex}
+\item[Доменное имя]
+\input{regexp/re_domain.tex}
+\item[Электронный адрес или пустые скобки]
+\input{regexp/re_email_or_empty.tex}
+\item[Электронный адрес]
+\input{regexp/re_email.tex}
 \end{description}
 
-Для грамматики можно использовать вставку из файла и оформление \textbackslash{}begin\{verbatim\} и \textbackslash{}end\{verbatim\} или пакет \textit{listings}\footnote{На дворе XXI век, но пакет \textit{listings} всё ещё не пашет с русскими комментариями без бубна, и лично я его пока не победил.}.
+Регулярные выражения SMTP команд:
+\begin{description}
+    \item[NOOP]
+    \input{regexp/re_cmnd_noop.tex}
+    \item[HELO]
+    \input{regexp/re_cmnd_helo.tex}
+    \item[EHLO]
+    \input{regexp/re_cmnd_ehlo.tex}
+    \item[MAIL]
+    \input{regexp/re_cmnd_mail.tex}
+    \item[RCPT]
+    \input{regexp/re_cmnd_rcpt.tex}
+    \item[VRFY]
+    \input{regexp/re_cmnd_vrfy.tex}
+    \item[DATA]
+    \input{regexp/re_cmnd_data.tex}
+    \item[RSET]
+    \input{regexp/re_cmnd_rset.tex}
+    \item[QUIT]
+    \input{regexp/re_cmnd_quit.tex}
+\end{description}
 
-Для примера воспользуемся автоматической вставкой файла описания параметров программы (не забудьте перенести это в технологический раздел) через утилитку \textit{src2tex}.
+Регулярные выражения содержимого письма:
+\begin{description}
+    \item[Данные письма]
+    \input{regexp/re_mail_data.tex}
+    \item[Окончание данных письма]
+    \input{regexp/re_mail_end.tex}
+\end{description}
 
-\input{include/checkoptn.def.tex}
+%Для примера воспользуемся автоматической вставкой файла описания параметров программы (не забудьте перенести это в технологический раздел) через утилитку \textit{src2tex}.
+
+%\input{include/checkoptn.def.tex}
 % \lstset{language=C}
 % \lstinputlisting{../src/checkoptn.def}
 
-\chapter{Технологический раздел}
+%\chapter{Технологический раздел}
+%
+%Нужно отметьть, что символ <<\_>> необходимо оформлять как <<\textbackslash\_>>.
+%
+%\section{Сборка программы}
+%
+%Сборка программы описана в файле \textit{Makefile} системы сборки \textit{make}. Рис.~\ref{fig:make} нагенерили самодельные \textit{makesimple} и \textit{makefile2dot}, а также \textit{dot2tex} и \textit{dot}.
+%
+%\begin{figure}
+%\centering
+%\includegraphics[width=\textwidth]{include/Makefile_1_dot.pdf}
+%\caption{Сборка программы}
+%\label{fig:make}
+%\end{figure}
+%
+%Отмечу, что за исключения целей типа \textit{all}, \textit{install}, \textit{clean}, \textit{tests}, все имена целей в файле систем сборки \textit{make} обычно совпадают с именами файлов (такой вот низкоуровневый инструмент). То есть вместо цели \textit{lexer} следует использовать цель \textit{src/lexer.c}.
+%
+%\section{Основные функции программы}
+%
+%Весь это раздел сгеренерировал doxygen из части комментированных исходников программы. В файле конфигурации \textbf{doxyggen.cfg} был отключён параметр \textbf{HAVE\_DOT}, поскольку для рисования графов вызовов используется \textit{cflow}.
+%
+%% \input{include/files}
+%
+%\input{include/server-state_8h.tex}
+%% \input{include/server-state_8c.tex}
+%\input{include/server-re_8h.tex}
+%\input{include/server-cmd_8h.tex}
+%% \input{include/server-cmd_8c.tex}
+%\input{include/server-parse_8h.tex}
+%\input{include/server-parse_8c.tex}
+%\input{include/server-run_8h.tex}
+%\input{include/server-run_8c.tex}
+%\input{include/server_8c.tex}
+%
+%
+%\section{Графы вызова функций}
+%
+%Поскольку функций много, графы вызовов разбиты на два рисунка. На рис.~\ref{fig:cflow01} показаны основные функции, на рис.~\ref{fig:cflow02}~-- функции обработки команд. Файл \textbf{cflow.ignore} содержит список функций (точнее, шабловнов поиска), использыемых программой \textit{grep} для удаления малоинтересных стандартных функций\footnote{Функции по работе с сокетами, ipc и привилегиями к малоинтересным ни в коем случае не относятся.}.
+%
+%\begin{figure}
+%\centering
+%\includegraphics[width=\textwidth]{include/cflow01_dot.pdf}
+%\caption{Граф вызовов, основные функции}
+%\label{fig:cflow01}
+%\end{figure}
+%
+%\begin{figure}
+%\centering
+%\includegraphics[width=\textwidth]{include/cflow02_dot.pdf}
+%\caption{Граф вызовов, функции обработки команд}
+%\label{fig:cflow02}
+%\end{figure}
+%
+%Графы созданы с помощью \textit{cflow}, \textit{cflow2dot}, \textit{dot}.
+%
+%\addcontentsline{toc}{chapter}{Выводы}
 
-Нужно отметьть, что символ <<\_>> необходимо оформлять как <<\textbackslash\_>>.
-
-\section{Сборка программы}
-
-Сборка программы описана в файле \textit{Makefile} системы сборки \textit{make}. Рис.~\ref{fig:make} нагенерили самодельные \textit{makesimple} и \textit{makefile2dot}, а также \textit{dot2tex} и \textit{dot}.
-
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth]{include/Makefile_1_dot.pdf}
-\caption{Сборка программы}
-\label{fig:make}
-\end{figure}
-
-Отмечу, что за исключения целей типа \textit{all}, \textit{install}, \textit{clean}, \textit{tests}, все имена целей в файле систем сборки \textit{make} обычно совпадают с именами файлов (такой вот низкоуровневый инструмент). То есть вместо цели \textit{lexer} следует использовать цель \textit{src/lexer.c}.
-
-\section{Основные функции программы}
-
-Весь это раздел сгеренерировал doxygen из части комментированных исходников программы. В файле конфигурации \textbf{doxyggen.cfg} был отключён параметр \textbf{HAVE\_DOT}, поскольку для рисования графов вызовов используется \textit{cflow}.
-
-% \input{include/files}
-
-\input{include/server-state_8h.tex}
-% \input{include/server-state_8c.tex}
-\input{include/server-re_8h.tex}
-\input{include/server-cmd_8h.tex}
-% \input{include/server-cmd_8c.tex}
-\input{include/server-parse_8h.tex}
-\input{include/server-parse_8c.tex}
-\input{include/server-run_8h.tex}
-\input{include/server-run_8c.tex}
-\input{include/server_8c.tex}
-
-
-\section{Графы вызова функций}
-
-Поскольку функций много, графы вызовов разбиты на два рисунка. На рис.~\ref{fig:cflow01} показаны основные функции, на рис.~\ref{fig:cflow02}~-- функции обработки команд. Файл \textbf{cflow.ignore} содержит список функций (точнее, шабловнов поиска), использыемых программой \textit{grep} для удаления малоинтересных стандартных функций\footnote{Функции по работе с сокетами, ipc и привилегиями к малоинтересным ни в коем случае не относятся.}.
-
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth]{include/cflow01_dot.pdf}
-\caption{Граф вызовов, основные функции}
-\label{fig:cflow01}
-\end{figure}
-
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth]{include/cflow02_dot.pdf}
-\caption{Граф вызовов, функции обработки команд}
-\label{fig:cflow02}
-\end{figure}
-
-Графы созданы с помощью \textit{cflow}, \textit{cflow2dot}, \textit{dot}.
-
-\addcontentsline{toc}{chapter}{Выводы}
 \chapter*{Выводы}
 
 Что вы сделали и поняли.

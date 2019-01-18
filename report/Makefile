@@ -9,25 +9,37 @@ STD = -std=gnu99
 UTILS_DIR = ./utils
 DOT_DIR = ./dot
 TEX_DIR = ./tex
+TEX_REGEXP_DIR = $(TEX_DIR)/regexp
 IMG_DIR = ./images
+SRC_SRV_DIR = ./../source/server
 PYTHON2_ENV_DIR = ./report_env
 
 # Utilities
 MAKE2DOT = $(UTILS_DIR)/makefile2dot
 FSM2DOT = $(UTILS_DIR)/fsm2dot
+RE2TEX = $(UTILS_DIR)/re2tex
+PDFLATEX = pdflatex -interaction=nonstopmode
+
+# Files
+RE_FILE = $(SRC_SRV_DIR)/server-re.h
+TEX_FILES = $(wildcard $(TEX_DIR)/*.tex)
 
 # TARGES:
 
 all: clean report
 
-report:
-	echo "Report with name $(REPORT_NAME) was not created. Kek."
+report: $(TEX_FILES)
+	cd $(TEX_DIR) && $(PDFLATEX) report.tex && $(PDFLATEX) report.tex && cp report.pdf ..
 
 clean:
-	rm -rf report.pdf $(TEX_DIR)/serverfsm_dot.tex $(DOT_DIR)/serverfsm_def.dot
+	rm -rf report.pdf
+
+.PHONY: tex_subdirs
+tex_subdirs:
+	mkdir -p $(TEX_REGEXP_DIR)
 
 
-# GENERATE FSM IMAGES
+# GENERATE SMTP FSM IMAGES
 
 # .def -> _def.dot
 ./dot/serverfsm_def.dot: ./../source/server/autogen/server.def
@@ -41,9 +53,8 @@ generate_fsm_images:
 	 dot -Tpng $(DOT_DIR)/serverfsm_def.dot > $(IMG_DIR)/serverfsm.png; \
 	 dot -Tpng $(DOT_DIR)/serverfsm_report_def.dot > $(IMG_DIR)/serverfsm_report.png
 
+
 # TEX FILES GENERATION:
 
-# .dot -> _dot.tex
-./../report/tex/serverfsm_dot.tex: ./../report/dot/serverfsm_def.dot
-	source report_env/bin/activate ; \
-	dot2tex -ftikz --autosize --crop  $< > $@
+./tex/regexp/smtp_re.tex: ./../source/server/rexprs.h
+	$(RE2TEX) ./../source/server/rexprs.h $(TEX_REGEXP_DIR)
