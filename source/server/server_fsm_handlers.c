@@ -238,9 +238,11 @@ int HANDLE_MAIL_DATA( int client_fd, char*** matchdata, int matchdatalen, int** 
 
     if ( matchdatalen == 2 ) {
         char* mail_data = ( *matchdata )[ matchdatalen - 2 ];
-        append_data_to_mail( client->mail, mail_data, *( matchdatasizes[ matchdatalen - 2] ) );
+
         if ( *( matchdatasizes[ matchdatalen - 2] ) == 0 ) {
             append_data_to_mail( client->mail, client->buffer_input, strlen( client->buffer_input ) );
+        } else {
+            append_data_to_mail( client->mail, mail_data, *( matchdatasizes[ matchdatalen - 2] ) );
         }
 
         char* mail_end = ( *matchdata )[ matchdatalen - 1 ];
