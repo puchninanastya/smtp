@@ -16,6 +16,7 @@ COMMON_INCLUDE_DIR = ./../common/include
 COMMON_SOURCE_DIR = ./../common/source
 BUILD_DIR = build
 AUTOGEN_DIR = autogen
+TESTS_DIR = tests
 
 # FLAGS:
 
@@ -35,8 +36,8 @@ smtp_server:
     ./build/*.o
 
 test_client:
-	$(CC) $(STD) $(RFLAGS) -o ./$(BUILD_DIR)/test_client \
-	test_client.c $(COMMON_SOURCE_DIR)/*.c
+	$(CC) $(STD) $(RFLAGS) -o ./$(BUILD_DIR)/test_client  \
+	$(TESTS_DIR)/test_client.c $(COMMON_SOURCE_DIR)/*.c
 
 
 # ADDITIONAL:

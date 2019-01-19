@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 
 #include "error_fail.h"
-#include "config.h"
+#include "../config.h"
 
 int main( int argc, char **argv )
 {
