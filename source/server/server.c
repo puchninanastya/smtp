@@ -55,6 +55,7 @@ void server_update_fd_sets()
     while ( current_client != NULL ) {
         printf( "Adding client to fd set.\n" );
         FD_SET( current_client->data, my_server.read_fds_set );
+        // FD_SET( current_client->data, my_server.write_fds_set );
         if ( current_client->data > my_server.max_fd ) {
             my_server.max_fd = current_client->data;
         }
@@ -111,7 +112,6 @@ int server_run()
                 if ( FD_ISSET( current_client->data, my_server.read_fds_set ) ) {
                     handle_client_read( current_client->data );
                 } else if ( FD_ISSET( current_client->data, my_server.write_fds_set ) ) {
-                    printf( "ATTENTION! No handler for send message!!!\n" ); // TODO: add handler
                     handle_client_write( current_client->data );
                 } else if ( FD_ISSET( current_client->data, my_server.exceptions_fds_set ) ) {
                     printf( "Exception in client with fd %i.\n", current_client->data );
@@ -136,7 +136,7 @@ void handle_new_connection()
         fail_on_error( "Can not accept client!" );
     }
     smtp_server_step( SMTP_SERVER_ST_INIT, SMTP_SERVER_EV_CONN_ACCEPTED,
-                      client_socket_fd, NULL, 0 );
+                      client_socket_fd, NULL, 0, NULL );
     my_server.client_sockets_fds = linked_list_add_node( my_server.client_sockets_fds,
             client_socket_fd );
     printf( "Client accepted and client socket added to clients array.\n" );
@@ -154,35 +154,33 @@ int handle_client_read(int client_fd)
     ssize_t actual_received = recv( client_fd, buffer, BUFFER_SIZE, 0 );
 
     if ( actual_received < 0 ) {
+        // TODO: Nonblock
         fail_on_error( "Can not read data from client!" );
     } else if ( actual_received == 0 ) {
-        smtp_server_step( client->smtp_state, SMTP_SERVER_EV_CONN_LOST, client_fd, NULL, 0 );
+        smtp_server_step( client->smtp_state, SMTP_SERVER_EV_CONN_LOST, client_fd, NULL, 0, NULL );
     } else {
-        printf( "Message \"%s\" received from client, message lenght: %zd.\n",
-                buffer, actual_received );
+        //printf( "Message \"%s\" received from client, message lenght: %zd.\n",
+        //        buffer, actual_received );
         memset( client->buffer_input, 0, BUFFER_SIZE );
         memcpy( client->buffer_input, buffer, actual_received );
 
         // parse for command and send response
         char** matchdata = 0;
         int matchdatalen = 0;
-        smtp_re_commands cmnd = re_match_for_command( client->buffer_input, &matchdata, &matchdatalen );
+        int* matchdatasizes = 0;
+        smtp_re_commands cmnd = re_match_for_command( client->buffer_input, &matchdata, &matchdatalen, &matchdatasizes );
         printf( "Re match for command result cmnd: %d\n", cmnd );
-        printf( "Re match data len: %d\n", matchdatalen );
-        for( int i = 0; i < matchdatalen; i++ ) {
-            printf( "Re match data num %d: %s\n", i, matchdata[ i ] );
-        }
 
         te_smtp_server_state next_st;
         if ( cmnd == SMTP_RE_MAIL_DATA &&
             client->smtp_state != SMTP_SERVER_ST_WAITING_FOR_DATA ) {
             printf( "Reg exp returned command is invalid.\n" );
             smtp_server_step( client->smtp_state,
-                    SMTP_SERVER_EV_INVALID, client_fd, &matchdata, matchdatalen );
+                    SMTP_SERVER_EV_INVALID, client_fd, &matchdata, matchdatalen, &matchdatasizes );
             next_st = client->smtp_state;
         } else {
             next_st = smtp_server_step(client->smtp_state,
-                                       (te_smtp_server_event) cmnd, client_fd, &matchdata, matchdatalen);
+                                       (te_smtp_server_event) cmnd, client_fd, &matchdata, matchdatalen, &matchdatasizes );
         }
         client->smtp_state = next_st;
         printf( "New current state for client %d is %d.\n", client_fd, client->smtp_state );

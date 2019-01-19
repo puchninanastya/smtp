@@ -20,8 +20,6 @@ int logger_fork_and_initialize( logger_t* logger_sender )
             printf("logger process forked with pid: %d\n", getpid());
             printf("parent pid: %d\n", getppid());
 
-            // TODO: add handling of signals
-
             logger_t logger_listener;
 
             logger_init_mq( &logger_listener );

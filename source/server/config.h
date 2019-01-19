@@ -5,7 +5,7 @@
 #define PATH_TO_MAILDIR_DEFAULT "/Users/anastasia/maildir/"
 #define LOGGER_QUEUE_NAME "logger_queue"
 #define LOGGER_QUEUE_KEY 5
-#define LOGGER_DIR_DEFAULT "/logs"
+#define LOGGER_DIR_DEFAULT "./logs"
 #define LOGGER_QUEUE_CAPACITY 1024
 #define LOGGER_MSG_CAPACITY 256
 #define LOGGER_STOP_MSG "exit"

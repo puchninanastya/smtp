@@ -32,11 +32,13 @@ int send_response_to_client(int client_fd )
         fail_on_error( "Client socket send() error." );
     }
 
+    printf( "Actual sent size: %zd\n", actual_sent );
+    // TODO: check actual_sent and delete data that was sent from output buffer
+
     client->output_is_sent = 1;
     memset( client->buffer_output, 0, BUFFER_SIZE );
 
-    printf( "Actual sent size: %zd\n", actual_sent );
-    printf( "Message \"%s\" sent to client.\n", client->buffer_output );
+    printf( "Message %s sent to client.\n", client->buffer_output );
     return 0;
 }
 
@@ -92,7 +94,6 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
 int HANDLE_CMND_HELO( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState )
 {
     printf( "Handling command HELO...\n" );
-    // client_info* client = my_server.clients[ client_fd ];
 
     // TODO: add DNS checking
 
@@ -228,16 +229,29 @@ int HANDLE_CMND_DATA( int client_fd, te_smtp_server_state nextState )
     return nextState;
 }
 
-int HANDLE_MAIL_DATA( int client_fd, te_smtp_server_state nextState )
+int HANDLE_MAIL_DATA( int client_fd, char*** matchdata, int matchdatalen, int** matchdatasizes, te_smtp_server_state nextState )
 {
     printf( "Handling mail data...\n" );
     client_info* client = my_server.clients[ client_fd ];
 
     // TODO: check if two dots - delete one? (rfc 821)
 
-    append_data_to_mail( client->mail, client->buffer_input, strlen( client->buffer_input ) );
+    if ( matchdatalen == 2 ) {
+        char* mail_data = ( *matchdata )[ matchdatalen - 2 ];
+        append_data_to_mail( client->mail, mail_data, *( matchdatasizes[ matchdatalen - 2] ) );
+        if ( *( matchdatasizes[ matchdatalen - 2] ) == 0 ) {
+            append_data_to_mail( client->mail, client->buffer_input, strlen( client->buffer_input ) );
+        }
 
-    printf( "Handling mail data finished.\n" );
+        char* mail_end = ( *matchdata )[ matchdatalen - 1 ];
+        if ( strlen( mail_end ) > 0 ) {
+            nextState = smtp_server_step( client->smtp_state,
+                    SMTP_SERVER_EV_MAIL_END, client_fd, matchdata, matchdatalen, matchdatasizes );
+        }
+    } else {
+        append_data_to_mail( client->mail, client->buffer_input, strlen( client->buffer_input ) );
+    }
+
     return nextState;
 }
 
@@ -246,14 +260,9 @@ int HANDLE_MAIL_END( int client_fd, te_smtp_server_state nextState )
     printf( "Handling end of mail data...\n" );
     client_info* client = my_server.clients[ client_fd ];
 
-    printf( "Full client's mail data looks like: \n %s\n", client->mail->data );
-
     add_data_to_output_buffer( client_fd, RE_RESP_OK );
     send_response_to_client( client_fd );
     save_mail_to_maildir( client->mail );
-
-    // smtp_server_step( client->smtp_state, SMTP_SERVER_EV_MAIL_SAVED, client_fd, NULL, 0 );
-    // TODO: add "not saved" event and handler to send mail back to client or delete it if no sender in mail
 
     printf( "Handling end of mail data finished.\n" );
     return nextState;

@@ -22,7 +22,7 @@ void save_mail_to_maildir( mail* mail )
         FILE* mail_fd = fopen( path_to_file_in_tmp, "a" );
         fprintf( mail_fd, "From: <%s>\r\n", mail->sender );
         fprintf( mail_fd, "To: <%s>\r\n\r\n", mail->recepients[ i ] );
-        fprintf( mail_fd, "%s\n", mail->data );
+        fprintf( mail_fd, "%s", mail->data );
         fclose( mail_fd );
         rename( path_to_file_in_tmp, path_to_file_in_new );
 

@@ -27,6 +27,6 @@ typedef enum {
 int re_initialize();
 int re_finalize();
 int re_compile( smtp_re_commands re_pattern_name );
-smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int* matchdatalen );
+smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int* matchdatalen, int** matchdatasizes );
 
 #endif //SMTP_MTA_PARSER_H
