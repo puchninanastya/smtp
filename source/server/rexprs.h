@@ -5,7 +5,7 @@
 
 #define RE_CRLF "\\r\\n"
 #define RE_SPACE "\\s*"
-#define RE_DOMAIN "<(?<domain>.+)>"
+#define RE_DOMAIN "(?<domain>.+)"
 #define RE_EMAIL_OR_EMPTY "(<(?<address>.+@.+)>|<>)"
 #define RE_EMAIL "<(?<address>.+@.+)>"
 
