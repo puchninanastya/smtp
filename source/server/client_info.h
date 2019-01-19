@@ -16,5 +16,6 @@ struct client_info {
 };
 
 void reset_client_info( int client_fd );
+void free_client_info( int client_fd );
 
 #endif //SMTP_MTA_CLIENT_INFO_H

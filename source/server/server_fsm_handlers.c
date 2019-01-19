@@ -256,6 +256,8 @@ int HANDLE_CLOSE( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handling close...\n" );
     send_response_to_client( client_fd, RE_RESP_CLOSE );
+    free_client_info( client_fd );
+    close_client_connection( client_fd );
     printf( "Handling close finished.\n" );
     return nextState;
 }
