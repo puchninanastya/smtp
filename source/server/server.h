@@ -8,7 +8,7 @@
 #include "client_info.h"
 #include "logger.h"
 
-int server_initialize();
+int server_initialize( int port );
 void server_update_fd_sets();
 int server_run();
 void handle_new_connection();
@@ -16,6 +16,12 @@ int handle_client_read( int client_fd );
 int handle_client_write( int client_fd );
 void close_client_connection( int client_fd );
 void server_close();
+
+typedef struct {
+	int server_port;
+	char* path_to_maildir;
+	char* path_to_logdir;
+} config_t;
 
 struct server {
 	int server_socket_fd;

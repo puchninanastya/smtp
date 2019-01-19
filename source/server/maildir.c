@@ -14,7 +14,7 @@ void save_mail_to_maildir( mail* mail )
     printf( "Saving mail to maildir...\n" );
     for ( int i = 0; i < mail->recepients_num; i++ ) {
         // TODO: change PATH_TO_MAILDIR_FROM_BUILD to options or config path
-        char* path_to_user_maildir = make_maildir_for_user( PATH_TO_MAILDIR_FROM_BUILD, mail->recepients[ i ] );
+        char* path_to_user_maildir = make_maildir_for_user( PATH_TO_MAILDIR_DEFAULT, mail->recepients[ i ] );
         char* mail_filename = generate_mail_filename();
         char* path_to_file_in_tmp = get_path_to_mail_file( path_to_user_maildir, "/tmp/", mail_filename );
         char* path_to_file_in_new = get_path_to_mail_file( path_to_user_maildir, "/new/", mail_filename );

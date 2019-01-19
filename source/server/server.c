@@ -17,10 +17,10 @@
 
 extern struct server my_server;
 
-int server_initialize() 
+int server_initialize( int port )
 {
     printf( "Initializing server...\n" );
-    my_server.server_socket_fd = create_socket_on_port( SERVER_PORT );
+    my_server.server_socket_fd = create_socket_on_port( port );
     my_server.break_main_loop = 0;
     my_server.clients = NULL;
     my_server.clients_size = 0;
