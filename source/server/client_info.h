@@ -8,10 +8,7 @@ typedef struct client_info client_info;
 struct client_info {
     te_smtp_server_state smtp_state;
     int socket_fd;
-    char* buffer;
-    int buffer_read_offset;
-    int buffer_data_size;
-    int mail_header_received;
+    char* buffer
     mail* mail;
 };
 

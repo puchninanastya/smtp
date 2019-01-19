@@ -63,7 +63,6 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
     memset( client, 0, sizeof( client_info ) );
     client->buffer = malloc( BUFFER_SIZE );
     memset( client->buffer, 0, BUFFER_SIZE );
-    client->buffer_data_size = 0;
     client->smtp_state = SMTP_SERVER_ST_READY;
     client->mail = NULL;
 
