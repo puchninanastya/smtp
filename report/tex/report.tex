@@ -24,7 +24,7 @@
 \subsection{Цель и задачи}
 
 Цель:
-    Разработать \textbf{SMTP-сервер} с использованием одного потока и pselect.
+    Разработать \textbf{SMTP-сервер} с использованием одного потока и метода pselect().
 
 Задачи:
 \begin{itemize}
@@ -172,72 +172,94 @@
     \input{regexp/re_mail_end.tex}
 \end{description}
 
-%Для примера воспользуемся автоматической вставкой файла описания параметров программы (не забудьте перенести это в технологический раздел) через утилитку \textit{src2tex}.
+\section{Синтаксис команд протокола}
+На рис.~\ref{fig:uml_server_ph} и на рис.~\ref{fig:uml_server_log} представлены физическая и логическая
+диаграммы представления данных в системе соответственно.
 
-%\input{include/checkoptn.def.tex}
-% \lstset{language=C}
-% \lstinputlisting{../src/checkoptn.def}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{../images/uml_server_ph.png}
+    \caption{Физическая диаграмма представления данных в серверной части системы}
+    \label{fig:uml_server_ph}
+\end{figure}
 
-%\chapter{Технологический раздел}
-%
-%Нужно отметьть, что символ <<\_>> необходимо оформлять как <<\textbackslash\_>>.
-%
-%\section{Сборка программы}
-%
-%Сборка программы описана в файле \textit{Makefile} системы сборки \textit{make}. Рис.~\ref{fig:make} нагенерили самодельные \textit{makesimple} и \textit{makefile2dot}, а также \textit{dot2tex} и \textit{dot}.
-%
-%\begin{figure}
-%\centering
-%\includegraphics[width=\textwidth]{include/Makefile_1_dot.pdf}
-%\caption{Сборка программы}
-%\label{fig:make}
-%\end{figure}
-%
-%Отмечу, что за исключения целей типа \textit{all}, \textit{install}, \textit{clean}, \textit{tests}, все имена целей в файле систем сборки \textit{make} обычно совпадают с именами файлов (такой вот низкоуровневый инструмент). То есть вместо цели \textit{lexer} следует использовать цель \textit{src/lexer.c}.
-%
-%\section{Основные функции программы}
-%
-%Весь это раздел сгеренерировал doxygen из части комментированных исходников программы. В файле конфигурации \textbf{doxyggen.cfg} был отключён параметр \textbf{HAVE\_DOT}, поскольку для рисования графов вызовов используется \textit{cflow}.
-%
-%% \input{include/files}
-%
-%\input{include/server-state_8h.tex}
-%% \input{include/server-state_8c.tex}
-%\input{include/server-re_8h.tex}
-%\input{include/server-cmd_8h.tex}
-%% \input{include/server-cmd_8c.tex}
-%\input{include/server-parse_8h.tex}
-%\input{include/server-parse_8c.tex}
-%\input{include/server-run_8h.tex}
-%\input{include/server-run_8c.tex}
-%\input{include/server_8c.tex}
-%
-%
-%\section{Графы вызова функций}
-%
-%Поскольку функций много, графы вызовов разбиты на два рисунка. На рис.~\ref{fig:cflow01} показаны основные функции, на рис.~\ref{fig:cflow02}~-- функции обработки команд. Файл \textbf{cflow.ignore} содержит список функций (точнее, шабловнов поиска), использыемых программой \textit{grep} для удаления малоинтересных стандартных функций\footnote{Функции по работе с сокетами, ipc и привилегиями к малоинтересным ни в коем случае не относятся.}.
-%
-%\begin{figure}
-%\centering
-%\includegraphics[width=\textwidth]{include/cflow01_dot.pdf}
-%\caption{Граф вызовов, основные функции}
-%\label{fig:cflow01}
-%\end{figure}
-%
-%\begin{figure}
-%\centering
-%\includegraphics[width=\textwidth]{include/cflow02_dot.pdf}
-%\caption{Граф вызовов, функции обработки команд}
-%\label{fig:cflow02}
-%\end{figure}
-%
-%Графы созданы с помощью \textit{cflow}, \textit{cflow2dot}, \textit{dot}.
-%
-%\addcontentsline{toc}{chapter}{Выводы}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{../images/uml_server_log.png}
+    \caption{Логическая диаграмма представления данных в серверной части системы}
+    \label{fig:uml_server_log}
+\end{figure}
+
+
+Конфигурация \textit{serveropts.def}, используемая для автоматической генерации исходного кода обработки
+входных флагов приложенияс помощью \textit{autogen}.:
+
+\lstset{language=C}
+\lstinputlisting{../../source/server/autogen/serveropts.def}
+
+\chapter{Технологический раздел}
+
+\section{Сборка программы}
+
+Сборка SMTP агента состоит из трех \textit{Makefile} системы сборки \textit{make}:
+
+\begin{itemize}
+    \item сборка клиента,
+    \item сборка сервера,
+    \item сборка отчета.
+\end{itemize}
+
+\subsection{Сборка серверной части SMTP агента}
+
+Сборка SMTP сервера состоит из следующих целей:
+
+\begin{enumerate}
+    \item сборка сервера;
+    \item сборка тестового клиента;
+    \item генерация исходных кодов конечного автомата и опций с помощью \textit{autogen};
+    \item сборка сервера и тестового клиента;
+    \item запуск системного тестирования.
+\end{enumerate}
+
+Сборка программы осуществляется с помощью следующей команды:
+\begin{verbatim}
+    make autogen_all && make all
+\end{verbatim}
+
+
+\addcontentsline{toc}{chapter}{Выводы}
 
 \chapter*{Выводы}
 
-Что вы сделали и поняли.
+\section{Серверная часть SMTP агента}
+
+В результате выполнения курсового проекта была достугнута поставленная цель, а именно разработан
+\textbf{SMTP-сервер} с использованием одного потока и метода pselect(), осуществляющее прием и сохранение писем
+для дальнейшей поставки их пользователям.
+
+Во время выполнения работы были выполнены следующие задачи:
+\begin{itemize}
+    \item проанализировано архитектурное решение, данное по условиям задачи, определены его преимущества и недостатки;
+    \item разработан и реализован подход для обработки входящих соединений на основе метода pselect();
+    \item разработан и реализовано хранение входящих писем в каталоге maildir;
+    \item проанализирован протокол \textbf{SMTP} и реализован конечный автомат обработки входящих SMTP-сообщений;
+\end{itemize}
+
+А также получены и закреплены следующие навыки:
+\begin{itemize}
+    \item проектирование и реализация сетевого протокола SMTP;
+    \item реализация серверного приложения с несколькими процессами на языке программирования Си;
+    \item создание сценариев сборки программного обеспечения;
+    \item использование latex и сценариев сборки для автогенерации расчетно-пояснительной записки.
+\end{itemize}
+
+В ходе работы не были реализованы следующие пункты, планируемые к разработке в дальнейшем:
+\begin{itemize}
+    \item проверка обратной зоны DNS;
+    \item генерация документации и графов функци с помощью утилит;
+    \item использование внешних конфигурационных файлов;
+    \item модульное тестирование;
+\end{itemize}
 
 
 \end{document}

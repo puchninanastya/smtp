@@ -155,7 +155,7 @@ int handle_client_read(int client_fd)
     if ( actual_received < 0 ) {
         fail_on_error( "Can not read data from client!" );
     } else if ( actual_received == 0 ) {
-        close_client_connection( client_fd );
+        smtp_server_step( client->smtp_state, SMTP_SERVER_EV_CONN_LOST, client_fd, NULL, 0 );
     } else {
         printf( "Message \"%s\" received from client, message lenght: %zd.\n",
                 buffer, actual_received );
