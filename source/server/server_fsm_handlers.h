@@ -3,7 +3,7 @@
 
 #include "autogen/server-fsm.h"
 
-int send_response_to_client( int client_fd, const char* response );
+int send_response_to_client( int client_fd );
 
 /* SMTP FSM HANDLERS: */
 

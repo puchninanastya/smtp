@@ -11,6 +11,7 @@
 #include "re_parser.h"
 #include "config.h"
 #include "error_fail.h"
+#include "server_fsm_handlers.h"
 
 #include "autogen/server-fsm.h"
 
@@ -111,7 +112,7 @@ int server_run()
                     handle_client_read( current_client->data );
                 } else if ( FD_ISSET( current_client->data, my_server.write_fds_set ) ) {
                     printf( "ATTENTION! No handler for send message!!!\n" ); // TODO: add handler
-                    //handle_send_message( current_client->data );
+                    handle_client_write( current_client->data );
                 } else if ( FD_ISSET( current_client->data, my_server.exceptions_fds_set ) ) {
                     printf( "Exception in client with fd %i.\n", current_client->data );
                     close_client_connection( current_client->data );
@@ -159,13 +160,13 @@ int handle_client_read(int client_fd)
     } else {
         printf( "Message \"%s\" received from client, message lenght: %zd.\n",
                 buffer, actual_received );
-        memset( client->buffer, 0, BUFFER_SIZE );
-        memcpy( client->buffer, buffer, actual_received );
+        memset( client->buffer_input, 0, BUFFER_SIZE );
+        memcpy( client->buffer_input, buffer, actual_received );
 
         // parse for command and send response
         char** matchdata = 0;
         int matchdatalen = 0;
-        smtp_re_commands cmnd = re_match_for_command( client->buffer, &matchdata, &matchdatalen );
+        smtp_re_commands cmnd = re_match_for_command( client->buffer_input, &matchdata, &matchdatalen );
         printf( "Re match for command result cmnd: %d\n", cmnd );
         printf( "Re match data len: %d\n", matchdatalen );
         for( int i = 0; i < matchdatalen; i++ ) {
@@ -187,6 +188,16 @@ int handle_client_read(int client_fd)
         printf( "New current state for client %d is %d.\n", client_fd, client->smtp_state );
     }
 
+    return 0;
+}
+
+int handle_client_write( int client_fd )
+{
+    printf( "Trying to write message to client with fd %d...\n", client_fd );
+    client_info* client = my_server.clients[ client_fd ];
+    if ( !client->output_is_sent ) {
+        send_response_to_client( client_fd );
+    }
     return 0;
 }
 
