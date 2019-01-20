@@ -46,7 +46,7 @@
 typedef enum {
     INDEX_OPT_PORT        =  0,
     INDEX_OPT_MAILDIR     =  1,
-    INDEX_OPT_FILE        =  2,
+    INDEX_OPT_LOGDIR      =  2,
     INDEX_OPT_HELP        =  3,
     INDEX_OPT_MORE_HELP   =  4
 } teOptIndex;
@@ -106,7 +106,7 @@ typedef enum {
 
 #define OPT_VALUE_PORT           (DESC(PORT).optArg.argInt)
 #define VALUE_OPT_MAILDIR        'd'
-#define VALUE_OPT_FILE           'f'
+#define VALUE_OPT_LOGDIR         'l'
 /** option flag (value) for help-value option */
 #define VALUE_OPT_HELP          '?'
 /** option flag (value) for more-help-value option */

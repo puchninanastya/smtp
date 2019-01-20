@@ -68,7 +68,7 @@ int re_compile( smtp_re_commands re_pattern_name )
     return 0;
 }
 
-smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int* matchdatalen )
+smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int* matchdatalen, int** matchdatasizes )
 {
     PCRE2_SPTR subject = ( PCRE2_SPTR )text;
     size_t subject_length = strlen( (  char *) subject );
@@ -135,6 +135,7 @@ smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int*
 
     *matchdata = calloc( namecount, sizeof( char* ) );
     *matchdatalen = namecount;
+    *matchdatasizes = calloc ( namecount, sizeof( int ) );
 
     PCRE2_SPTR tabptr;
 
@@ -165,11 +166,8 @@ smtp_re_commands re_match_for_command( const char* text, char*** matchdata, int*
 
         int sz = ( int )( ovector[ 2 * n + 1 ] - ovector[ 2 * n ] );
         ( *matchdata )[ i ] = calloc( sz + 1, sizeof( char ) );
+        ( *matchdatasizes)[ i ] = sz;
         memcpy( ( *matchdata )[ i ], ( char* )( subject + ovector[ 2 * n ] ), sz * sizeof( char ) );
-
-        printf(" Debug: match data i %d: %s\n", i,  ( *matchdata )[ i ] );
-        printf("  (%d) %*s: %.*s\n", n, name_entry_size - 3, tabptr + 2, ( int )( ovector[ 2 * n + 1]
-        - ovector[ 2 * n ] ), subject + ovector[ 2 * n ] );
 
         tabptr += name_entry_size;
     }

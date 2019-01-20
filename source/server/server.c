@@ -11,15 +11,16 @@
 #include "re_parser.h"
 #include "config.h"
 #include "error_fail.h"
+#include "server_fsm_handlers.h"
 
 #include "autogen/server-fsm.h"
 
 extern struct server my_server;
 
-int server_initialize() 
+int server_initialize( int port )
 {
     printf( "Initializing server...\n" );
-    my_server.server_socket_fd = create_socket_on_port( SERVER_PORT );
+    my_server.server_socket_fd = create_socket_on_port( port );
     my_server.break_main_loop = 0;
     my_server.clients = NULL;
     my_server.clients_size = 0;
@@ -54,6 +55,7 @@ void server_update_fd_sets()
     while ( current_client != NULL ) {
         printf( "Adding client to fd set.\n" );
         FD_SET( current_client->data, my_server.read_fds_set );
+        // FD_SET( current_client->data, my_server.write_fds_set );
         if ( current_client->data > my_server.max_fd ) {
             my_server.max_fd = current_client->data;
         }
@@ -110,8 +112,7 @@ int server_run()
                 if ( FD_ISSET( current_client->data, my_server.read_fds_set ) ) {
                     handle_client_read( current_client->data );
                 } else if ( FD_ISSET( current_client->data, my_server.write_fds_set ) ) {
-                    printf( "ATTENTION! No handler for send message!!!\n" ); // TODO: add handler
-                    //handle_send_message( current_client->data );
+                    handle_client_write( current_client->data );
                 } else if ( FD_ISSET( current_client->data, my_server.exceptions_fds_set ) ) {
                     printf( "Exception in client with fd %i.\n", current_client->data );
                     close_client_connection( current_client->data );
@@ -135,7 +136,7 @@ void handle_new_connection()
         fail_on_error( "Can not accept client!" );
     }
     smtp_server_step( SMTP_SERVER_ST_INIT, SMTP_SERVER_EV_CONN_ACCEPTED,
-                      client_socket_fd, NULL, 0 );
+                      client_socket_fd, NULL, 0, NULL );
     my_server.client_sockets_fds = linked_list_add_node( my_server.client_sockets_fds,
             client_socket_fd );
     printf( "Client accepted and client socket added to clients array.\n" );
@@ -153,40 +154,48 @@ int handle_client_read(int client_fd)
     ssize_t actual_received = recv( client_fd, buffer, BUFFER_SIZE, 0 );
 
     if ( actual_received < 0 ) {
+        // TODO: Nonblock
         fail_on_error( "Can not read data from client!" );
     } else if ( actual_received == 0 ) {
-        smtp_server_step( client->smtp_state, SMTP_SERVER_EV_CONN_LOST, client_fd, NULL, 0 );
+        smtp_server_step( client->smtp_state, SMTP_SERVER_EV_CONN_LOST, client_fd, NULL, 0, NULL );
     } else {
-        printf( "Message \"%s\" received from client, message lenght: %zd.\n",
-                buffer, actual_received );
-        memset( client->buffer, 0, BUFFER_SIZE );
-        memcpy( client->buffer, buffer, actual_received );
+        //printf( "Message \"%s\" received from client, message lenght: %zd.\n",
+        //        buffer, actual_received );
+        memset( client->buffer_input, 0, BUFFER_SIZE );
+        memcpy( client->buffer_input, buffer, actual_received );
 
         // parse for command and send response
         char** matchdata = 0;
         int matchdatalen = 0;
-        smtp_re_commands cmnd = re_match_for_command( client->buffer, &matchdata, &matchdatalen );
+        int* matchdatasizes = 0;
+        smtp_re_commands cmnd = re_match_for_command( client->buffer_input, &matchdata, &matchdatalen, &matchdatasizes );
         printf( "Re match for command result cmnd: %d\n", cmnd );
-        printf( "Re match data len: %d\n", matchdatalen );
-        for( int i = 0; i < matchdatalen; i++ ) {
-            printf( "Re match data num %d: %s\n", i, matchdata[ i ] );
-        }
 
         te_smtp_server_state next_st;
         if ( cmnd == SMTP_RE_MAIL_DATA &&
             client->smtp_state != SMTP_SERVER_ST_WAITING_FOR_DATA ) {
             printf( "Reg exp returned command is invalid.\n" );
             smtp_server_step( client->smtp_state,
-                    SMTP_SERVER_EV_INVALID, client_fd, &matchdata, matchdatalen );
+                    SMTP_SERVER_EV_INVALID, client_fd, &matchdata, matchdatalen, &matchdatasizes );
             next_st = client->smtp_state;
         } else {
             next_st = smtp_server_step(client->smtp_state,
-                                       (te_smtp_server_event) cmnd, client_fd, &matchdata, matchdatalen);
+                                       (te_smtp_server_event) cmnd, client_fd, &matchdata, matchdatalen, &matchdatasizes );
         }
         client->smtp_state = next_st;
         printf( "New current state for client %d is %d.\n", client_fd, client->smtp_state );
     }
 
+    return 0;
+}
+
+int handle_client_write( int client_fd )
+{
+    printf( "Trying to write message to client with fd %d...\n", client_fd );
+    client_info* client = my_server.clients[ client_fd ];
+    if ( !client->output_is_sent ) {
+        send_response_to_client( client_fd );
+    }
     return 0;
 }
 

@@ -8,6 +8,8 @@
 #define RE_DOMAIN "(?<domain>.+)"
 #define RE_EMAIL_OR_EMPTY "(<(?<address>.+@.+)>|<>)"
 #define RE_EMAIL "<(?<address>.+@.+)>"
+#define RE_DATA "[\\x00-\\x7F]+"
+#define RE_DATA_AND_END_OR_DATA "((?<data>[\\x00-\\x7F]+)(?<end>\\r\\n\\.\\r\\n))|([\\x00-\\x7F]+\\r\\n)"
 
 /* COMMANDS: */
 
@@ -24,7 +26,7 @@
 /* MAIL CONTENT: */
 
 #define RE_MAIL_END "^\\." RE_CRLF
-#define RE_MAIL_DATA "[\\x00-\\x7F]+" RE_CRLF
+#define RE_MAIL_DATA RE_DATA_AND_END_OR_DATA
 
 /* RESPONSES: */
 

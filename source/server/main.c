@@ -78,13 +78,20 @@ int main( int argc, char **argv )
         argv += optct;
     }
 
+    int server_port = SERVER_PORT_DEFAULT;
+
+    if ( HAVE_OPT( PORT ) ) {
+        server_port = OPT_VALUE_PORT;
+        printf( "server port flag value: %d.\n", server_port );
+    }
+
     if ( set_handler_to_signals() ) {
         printf( "Can not set handlers to signals.\n" );
         return 1;
     }
 	printf( "Successfully set exit handler to signals.\n" );
 
-    server_initialize();
+    server_initialize( server_port );
     server_run();
     server_close();
 

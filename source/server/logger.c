@@ -20,8 +20,6 @@ int logger_fork_and_initialize( logger_t* logger_sender )
             printf("logger process forked with pid: %d\n", getpid());
             printf("parent pid: %d\n", getppid());
 
-            // TODO: add handling of signals
-
             logger_t logger_listener;
 
             logger_init_mq( &logger_listener );
@@ -125,7 +123,7 @@ int logger_open_file( logger_t* logger )
 {
     printf( "Opening log file...\n");
     logger->filename = malloc( sizeof( char ) * 100 );
-    sprintf( logger->filename, "%s/SMTP_LOG_%s", LOGGER_DIR, logger_get_log_time() );
+    sprintf( logger->filename, "%s/SMTP_LOG_%s", LOGGER_DIR_DEFAULT, logger_get_log_time() );
     printf( "Logger: filename is %s\n", logger->filename );
     FILE* log_fd = fopen( logger->filename, "a" );
     if ( log_fd < 0 ) {

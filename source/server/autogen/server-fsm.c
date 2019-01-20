@@ -306,7 +306,8 @@ smtp_server_step(
     te_smtp_server_event trans_evt,
     int client_socket_fd,
     char*** matchdata,
-    int matchdatalen )
+    int matchdatalen,
+    int** matchdatasizes )
 {
     te_smtp_server_state nxtSt;
     te_smtp_server_trans trans;
@@ -404,7 +405,7 @@ smtp_server_step(
 
     case SMTP_SERVER_TR_MAIL_DATA:
         /* START == MAIL_DATA == DO NOT CHANGE THIS COMMENT */
-        nxtSt = HANDLE_MAIL_DATA(client_socket_fd, nxtSt);
+        nxtSt = HANDLE_MAIL_DATA(client_socket_fd, matchdata,  matchdatalen, matchdatasizes, nxtSt);
         /* END   == MAIL_DATA == DO NOT CHANGE THIS COMMENT */
         break;
 

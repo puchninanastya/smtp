@@ -41,22 +41,22 @@ extern FILE * option_usage_fp;
 /**
  *  static const strings for server options
  */
-static char const server_opt_strs[301] =
+static char const server_opt_strs[311] =
 /*     0 */ "Port to bind\0"
 /*    13 */ "PORT\0"
 /*    18 */ "port\0"
 /*    23 */ "Path to maildir directory\0"
 /*    49 */ "MAILDIR\0"
 /*    57 */ "maildir\0"
-/*    65 */ "File to proceed\0"
-/*    81 */ "FILE\0"
-/*    86 */ "file\0"
-/*    91 */ "display extended usage information and exit\0"
-/*   135 */ "help\0"
-/*   140 */ "extended usage information passed thru pager\0"
-/*   185 */ "more-help\0"
-/*   195 */ "SERVER\0"
-/*   202 */ "server - SMTP Mail Transfer Agent Server\n"
+/*    65 */ "Path to log directory\0"
+/*    87 */ "LOGDIR\0"
+/*    94 */ "logdir\0"
+/*   101 */ "display extended usage information and exit\0"
+/*   145 */ "help\0"
+/*   150 */ "extended usage information passed thru pager\0"
+/*   195 */ "more-help\0"
+/*   205 */ "SERVER\0"
+/*   212 */ "server - SMTP Mail Transfer Agent Server\n"
             "Usage:  %s { -<flag> [<val>] | --<name>[{=| }<val>] }...\n";
 
 /**
@@ -86,26 +86,26 @@ static char const server_opt_strs[301] =
         | OPTST_SET_ARGTYPE(OPARG_TYPE_STRING))
 
 /**
- *  file option description:
+ *  logdir option description:
  */
-/** Descriptive text for the file option */
-#define FILE_DESC      (server_opt_strs+65)
-/** Upper-cased name for the file option */
-#define FILE_NAME      (server_opt_strs+81)
-/** Name string for the file option */
-#define FILE_name      (server_opt_strs+86)
-/** Compiled in flag settings for the file option */
-#define FILE_FLAGS     (OPTST_DISABLED \
+/** Descriptive text for the logdir option */
+#define LOGDIR_DESC      (server_opt_strs+65)
+/** Upper-cased name for the logdir option */
+#define LOGDIR_NAME      (server_opt_strs+87)
+/** Name string for the logdir option */
+#define LOGDIR_name      (server_opt_strs+94)
+/** Compiled in flag settings for the logdir option */
+#define LOGDIR_FLAGS     (OPTST_DISABLED \
         | OPTST_SET_ARGTYPE(OPARG_TYPE_STRING))
 
 /*
  *  Help/More_Help option descriptions:
  */
-#define HELP_DESC       (server_opt_strs+91)
-#define HELP_name       (server_opt_strs+135)
+#define HELP_DESC       (server_opt_strs+101)
+#define HELP_name       (server_opt_strs+145)
 #ifdef HAVE_WORKING_FORK
-#define MORE_HELP_DESC  (server_opt_strs+140)
-#define MORE_HELP_name  (server_opt_strs+185)
+#define MORE_HELP_DESC  (server_opt_strs+150)
+#define MORE_HELP_name  (server_opt_strs+195)
 #define MORE_HELP_FLAGS (OPTST_IMM | OPTST_NO_INIT)
 #else
 #define MORE_HELP_DESC  HELP_DESC
@@ -169,16 +169,16 @@ static tOptDesc optDesc[OPTION_CT] = {
      /* desc, NAME, name */ MAILDIR_DESC, MAILDIR_NAME, MAILDIR_name,
      /* disablement strs */ NULL, NULL },
 
-  {  /* entry idx, value */ 2, VALUE_OPT_FILE,
-     /* equiv idx, value */ 2, VALUE_OPT_FILE,
+  {  /* entry idx, value */ 2, VALUE_OPT_LOGDIR,
+     /* equiv idx, value */ 2, VALUE_OPT_LOGDIR,
      /* equivalenced to  */ NO_EQUIVALENT,
      /* min, max, act ct */ 0, 1, 0,
-     /* opt state flags  */ FILE_FLAGS, 0,
-     /* last opt argumnt */ { NULL }, /* --file */
+     /* opt state flags  */ LOGDIR_FLAGS, 0,
+     /* last opt argumnt */ { NULL }, /* --logdir */
      /* arg list/cookie  */ NULL,
      /* must/cannot opts */ NULL, NULL,
      /* option proc      */ NULL,
-     /* desc, NAME, name */ FILE_DESC, FILE_NAME, FILE_name,
+     /* desc, NAME, name */ LOGDIR_DESC, LOGDIR_NAME, LOGDIR_name,
      /* disablement strs */ NULL, NULL },
 
   {  /* entry idx, value */ INDEX_OPT_HELP, VALUE_OPT_HELP,
@@ -209,9 +209,9 @@ static tOptDesc optDesc[OPTION_CT] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /** Reference to the upper cased version of server. */
-#define zPROGNAME       (server_opt_strs+195)
+#define zPROGNAME       (server_opt_strs+205)
 /** Reference to the title line for server usage. */
-#define zUsageTitle     (server_opt_strs+202)
+#define zUsageTitle     (server_opt_strs+212)
 /** There is no server configuration file. */
 #define zRcName         NULL
 /** There are no directories to search for server config files. */
@@ -525,7 +525,7 @@ static void bogus_function(void) {
   puts(_("Path to maildir directory"));
 
   /* referenced via serverOptions.pOptDesc->pzText */
-  puts(_("File to proceed"));
+  puts(_("Path to log directory"));
 
   /* referenced via serverOptions.pOptDesc->pzText */
   puts(_("display extended usage information and exit"));

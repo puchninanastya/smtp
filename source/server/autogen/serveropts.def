@@ -21,7 +21,7 @@ flag = {
 
 flag = {
     name      = maildir;        /* Путь к директории с письмами */
-    value     = d;              /* Краткий флаг (-p) */
+    value     = d;              /* Краткий флаг (-d) */
     arg-type  = string;
     max       = 1;              /* Не более одного раза */
     min       = 0;              /* Необязательный параметр */
@@ -29,10 +29,10 @@ flag = {
 };
 
 flag = {
-    name      = file;           /* Файл с командами */
-    value     = f;              /* Краткий флаг (-f) */
+    name      = logdir;         /* Путь к директории с лог-файлами */
+    value     = l;              /* Краткий флаг (-l) */
     arg-type  = string;
     max       = 1;              /* Не более одного раза */
     min       = 0;              /* Необязательный параметр */
-    descrip   = "File to proceed";
+    descrip   = "Path to log directory";
 };

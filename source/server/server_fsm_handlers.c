@@ -17,24 +17,35 @@
 
 extern struct server my_server;
 
-int send_response_to_client(int client_fd, const char *response)
+int send_response_to_client(int client_fd )
 {
     printf( "Trying to send message to client with fd %d...\n", client_fd );
-    ssize_t actual_sent = send( client_fd, response, strlen( response ), 0 );
+    client_info* client = my_server.clients[ client_fd ];
 
-    if ( actual_sent < 0 && errno == EWOULDBLOCK ) {
-            printf( "Error while sending message (EWouldblock), continue..\n" );
-            return 1; // TODO: add handling this return code!
+    ssize_t actual_sent = send( client_fd, client->buffer_output, strlen( client->buffer_output ), 0 );
+
+    if ( actual_sent < 0 && ( errno == EWOULDBLOCK || errno == EAGAIN ) ) {
+        client->output_is_sent = 0;
+        printf( "Error while sending message (EWOULDBLOCK or EAGAIN), continue..\n" );
+        return 1; // TODO: add handling this return code!
+    } else if ( actual_sent < 0 && ( errno == EWOULDBLOCK || errno == EAGAIN ) ) {
+        fail_on_error( "Client socket send() error." );
     }
 
     printf( "Actual sent size: %zd\n", actual_sent );
-    printf( "Message \"%s\" sent to client.\n", response );
+    // TODO: check actual_sent and delete data that was sent from output buffer
+
+    client->output_is_sent = 1;
+    memset( client->buffer_output, 0, BUFFER_SIZE );
+
+    printf( "Message %s sent to client.\n", client->buffer_output );
     return 0;
 }
 
 int HANDLE_CMND_NOOP( int client_fd, te_smtp_server_state nextState ) {
     printf( "Handling command NOOP...\n" );
-    send_response_to_client( client_fd, RE_RESP_OK );
+    add_data_to_output_buffer( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd );
     printf( "Handling command NOOP finished.\n" );
     return nextState;
 }
@@ -61,8 +72,8 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
     // initialize client_info struct for this client_fd
     client_info* client = malloc( sizeof( client_info ) );
     memset( client, 0, sizeof( client_info ) );
-    client->buffer = malloc( BUFFER_SIZE );
-    memset( client->buffer, 0, BUFFER_SIZE );
+    client->buffer_input = malloc( BUFFER_SIZE );
+    memset( client->buffer_input, 0, BUFFER_SIZE );
     client->smtp_state = SMTP_SERVER_ST_READY;
     client->mail = NULL;
 
@@ -71,7 +82,8 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
 
     logger_log_msg( &my_server.logger, LOG_MSG_TYPE_INFO, "New client accepted." );
 
-    send_response_to_client( client_fd, RE_RESP_READY );
+    add_data_to_output_buffer( client_fd, RE_RESP_READY );
+    send_response_to_client( client_fd );
 
     printf( "New client current smtp state: %d\n", my_server.clients[ client_fd ]->smtp_state );
 
@@ -82,7 +94,6 @@ int HANDLE_ACCEPTED( int client_fd, te_smtp_server_state nextState )
 int HANDLE_CMND_HELO( int client_fd, char*** matchdata, int matchdatalen, te_smtp_server_state nextState )
 {
     printf( "Handling command HELO...\n" );
-    // client_info* client = my_server.clients[ client_fd ];
 
     // TODO: add DNS checking
 
@@ -104,7 +115,8 @@ int HANDLE_CMND_HELO( int client_fd, char*** matchdata, int matchdatalen, te_smt
         printf( "Client's (%d) address is not verified!\r\n", client_fd );
     }
 
-    send_response_to_client( client_fd, RE_RESP_OK );
+    add_data_to_output_buffer( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd );
 
     printf( "Handling command HELO finished.\n" );
     return nextState;
@@ -134,7 +146,8 @@ int HANDLE_CMND_EHLO( int client_fd, char*** matchdata, int matchdatalen, te_smt
     }
 
     // TODO: to add supported smtp commands to response?
-    send_response_to_client( client_fd, RE_RESP_OK );
+    add_data_to_output_buffer( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd );
 
     printf( "Handling command EHLO finished.\n" );
     return nextState;
@@ -159,7 +172,8 @@ int HANDLE_CMND_MAIL( int client_fd, char*** matchdata, int matchdatalen, te_smt
     client->mail->recepients = NULL;
     client->mail->sender = email_address;
 
-    send_response_to_client( client_fd, RE_RESP_OK );
+    add_data_to_output_buffer( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd );
 
     printf( "Handling command MAIL finished.\n" );
     return nextState;
@@ -180,7 +194,7 @@ int HANDLE_CMND_RCPT( int client_fd, char*** matchdata, int matchdatalen, te_smt
 
     if ( client->mail->recepients_num + 1 > MAX_RCPT_CLIENTS ) {
         printf( "Client's mail already has max number of recepients! Can't add one more.\r\n" );
-        send_response_to_client(client_fd, RE_RESP_OK);
+        send_response_to_client( client_fd );
     } else {
         if ( client->mail->recepients == NULL ) {
             // allocation if adding first recepient
@@ -188,9 +202,10 @@ int HANDLE_CMND_RCPT( int client_fd, char*** matchdata, int matchdatalen, te_smt
                     sizeof(char *) * MAX_RCPT_CLIENTS); // TODO: change allocation (add realloc)
         }
         client->mail->recepients[ client->mail->recepients_num ] = email_address;
-
         client->mail->recepients_num++;
-        send_response_to_client(client_fd, RE_RESP_OK);
+
+        add_data_to_output_buffer( client_fd, RE_RESP_OK );
+        send_response_to_client( client_fd );
     }
 
     printf( "Handling command RCPT finished.\n" );
@@ -207,22 +222,38 @@ int HANDLE_CMND_DATA( int client_fd, te_smtp_server_state nextState )
     client->mail->data[ 0 ] = '\0';
     client->mail->data_capacity = 0;
 
-    send_response_to_client( client_fd, RE_RESP_START_MAIL );
+    add_data_to_output_buffer( client_fd, RE_RESP_START_MAIL );
+    send_response_to_client( client_fd );
 
     printf( "Handling command DATA finished.\n" );
     return nextState;
 }
 
-int HANDLE_MAIL_DATA( int client_fd, te_smtp_server_state nextState )
+int HANDLE_MAIL_DATA( int client_fd, char*** matchdata, int matchdatalen, int** matchdatasizes, te_smtp_server_state nextState )
 {
     printf( "Handling mail data...\n" );
     client_info* client = my_server.clients[ client_fd ];
 
     // TODO: check if two dots - delete one? (rfc 821)
 
-    append_data_to_mail( client->mail, client->buffer, strlen( client->buffer ) );
+    if ( matchdatalen == 2 ) {
+        char* mail_data = ( *matchdata )[ matchdatalen - 2 ];
 
-    printf( "Handling mail data finished.\n" );
+        if ( *( matchdatasizes[ matchdatalen - 2] ) == 0 ) {
+            append_data_to_mail( client->mail, client->buffer_input, strlen( client->buffer_input ) );
+        } else {
+            append_data_to_mail( client->mail, mail_data, *( matchdatasizes[ matchdatalen - 2] ) );
+        }
+
+        char* mail_end = ( *matchdata )[ matchdatalen - 1 ];
+        if ( strlen( mail_end ) > 0 ) {
+            nextState = smtp_server_step( client->smtp_state,
+                    SMTP_SERVER_EV_MAIL_END, client_fd, matchdata, matchdatalen, matchdatasizes );
+        }
+    } else {
+        append_data_to_mail( client->mail, client->buffer_input, strlen( client->buffer_input ) );
+    }
+
     return nextState;
 }
 
@@ -231,12 +262,9 @@ int HANDLE_MAIL_END( int client_fd, te_smtp_server_state nextState )
     printf( "Handling end of mail data...\n" );
     client_info* client = my_server.clients[ client_fd ];
 
-    printf( "Full client's mail data looks like: \n %s\n", client->mail->data );
-    send_response_to_client( client_fd, RE_RESP_OK );
+    add_data_to_output_buffer( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd );
     save_mail_to_maildir( client->mail );
-
-    // smtp_server_step( client->smtp_state, SMTP_SERVER_EV_MAIL_SAVED, client_fd, NULL, 0 );
-    // TODO: add "not saved" event and handler to send mail back to client or delete it if no sender in mail
 
     printf( "Handling end of mail data finished.\n" );
     return nextState;
@@ -246,7 +274,8 @@ int HANDLE_CMND_RSET( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handle command RSET.\n" );
     reset_client_info( client_fd );
-    send_response_to_client( client_fd, RE_RESP_OK );
+    add_data_to_output_buffer( client_fd, RE_RESP_OK );
+    send_response_to_client( client_fd );
     printf( "Handling command RSET finished.\n" );
     return nextState;
 }
@@ -254,7 +283,8 @@ int HANDLE_CMND_RSET( int client_fd, te_smtp_server_state nextState )
 int HANDLE_CLOSE( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handling close...\n" );
-    send_response_to_client( client_fd, RE_RESP_CLOSE );
+    add_data_to_output_buffer( client_fd, RE_RESP_CLOSE );
+    send_response_to_client( client_fd );
     free_client_info( client_fd );
     close_client_connection( client_fd );
     printf( "Handling close finished.\n" );
@@ -264,7 +294,8 @@ int HANDLE_CLOSE( int client_fd, te_smtp_server_state nextState )
 int HANDLE_ERROR( int client_fd, te_smtp_server_state nextState )
 {
     printf( "Handling error...\n" );
-    send_response_to_client( client_fd, RE_RESP_ERR_BAD_SEQ );
+    add_data_to_output_buffer( client_fd, RE_RESP_ERR_BAD_SEQ );
+    send_response_to_client( client_fd );
     printf( "Handling error finished.\n" );
     return nextState;
 }
